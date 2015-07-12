@@ -1,2 +1,13 @@
 node_modules/
 bin/
+
+method-draw/docs/
+method-draw/build/firefox/*
+method-draw/build/opera/*
+method-draw/build/svg-edit-2.6/*
+method-draw/build/svg-edit-2.6-src/*
+method-draw/build/svg-edit-2.6-src.tar.gz
+method-draw/build/svg-edit-2.6.wgt
+method-draw/build/svg-edit-2.6.xpi
+method-draw/build/svg-edit-2.6.zip
+method-draw/method-draw
