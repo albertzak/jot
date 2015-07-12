@@ -20,10 +20,11 @@ app.on('window-all-closed', function() {
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
 app.on('ready', function() {
-  // Create the browser window.
+  var electronScreen = require('screen');
+  var size = electronScreen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
-    'width': 800,
-    'height': 600,
+    'width': size.width,
+    'height': size.height,
     'disable-auto-hide-cursor': true,
     'web-preferences': {
       'text-areas-are-resizable': false,
@@ -34,7 +35,7 @@ app.on('ready', function() {
   });
 
   // and load the index.html of the app.
-  mainWindow.loadUrl('file://' + __dirname + '/../editor/method-draw/index.html');
+  mainWindow.loadUrl('file://' + __dirname + '/../method-draw/editor/index.html');
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {

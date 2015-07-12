@@ -116,7 +116,7 @@ var svgns = "http://www.w3.org/2000/svg",
 // Default configuration options
 var curConfig = {
   show_outside_canvas: true,
-  selectNew: true,
+  selectNew: false,
   dimensions: [640, 480]
 };
 
@@ -2557,7 +2557,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
             "points": d_attr,
             "id": getNextId(),
             "fill": "none",
-            "opacity": cur_shape.opacity / 2,
+            "opacity": cur_shape.opacity,
             "stroke-linecap": "round",
             "style": "pointer-events:none"
           }

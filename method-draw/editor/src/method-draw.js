@@ -40,12 +40,12 @@
       wireframe: false,
       colorPickerCSS: false,
       gridSnapping: false,
-      gridColor: "#000",
+      gridColor: "#46A3FC",
       baseUnit: 'px',
       snappingStep: 10,
       showRulers: (svgedit.browser.isTouch()) ? false : true,
       show_outside_canvas: false,
-      no_save_warning: true,
+      no_save_warning: false,
       initFont: 'Helvetica, Arial, sans-serif'
     },
       uiStrings = Editor.uiStrings = {
