@@ -1,5 +1,14 @@
 {
-  "name"    : "jotpad",
-  "version" : "0.1.0",
-  "main"    : "main.js"
+  "name": "jotpad",
+  "version": "0.0.1",
+  "main": "main.js",
+  "devDependencies": {
+    "electron-rebuild": "^0.2.3",
+    "electron-prebuilt": "^0.29.2"
+  },
+  "scripts": {
+    "install": "electron-rebuild",
+    "start": "electron .",
+    "build": "electron-packager . Jotpad --platform=all --arch=all --version=0.29.2 --out=bin/ --overwrite --ignore=node_modules/electron-prebuilt --ignore=node_modules/electron-packager --ignore=bin/ --ignore=Readme.md --ignore=.git/"
+  }
 }
