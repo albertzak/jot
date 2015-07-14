@@ -39,11 +39,12 @@
       initTool: 'select',
       wireframe: false,
       colorPickerCSS: false,
+      showGrid: true,
       gridSnapping: false,
       gridColor: "#46A3FC",
       baseUnit: 'px',
       snappingStep: 10,
-      showRulers: (svgedit.browser.isTouch()) ? false : true,
+      showRulers: false,
       show_outside_canvas: false,
       no_save_warning: false,
       initFont: 'Helvetica, Arial, sans-serif'

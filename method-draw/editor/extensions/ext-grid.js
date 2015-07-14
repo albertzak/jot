@@ -33,7 +33,7 @@ methodDraw.addExtension("view_grid", function(s) {
         'x': 0,
         'y': 0,
         'overflow': 'visible',
-        'display': 'none'
+        'display': 'inline'
     });
     
     var canvBG = $('#canvas_background');
@@ -46,21 +46,21 @@ methodDraw.addExtension("view_grid", function(s) {
         assignAttributes(gridPattern, {
             'id': 'gridpattern',
             'patternUnits': 'userSpaceOnUse',
-            'x': 0, //-(value.strokeWidth / 2), // position for strokewidth
-            'y': 0, //-(value.strokeWidth / 2), // position for strokewidth
-            'width': 100,
-            'height': 100
+            'width': 19,
+            'height': 19
+        });
+
+
+        var gridPath = svgdoc.createElementNS(svgns, "path");
+        assignAttributes(gridPath, {
+            'id': 'gridPath',
+            'd': 'M 19 0 L 0 0 0 19',
+            'fill': 'none',
+            'stroke': methodDraw.curConfig.gridColor,
+            'stroke-width': '0.5'
         });
         
-        var gridimg = svgdoc.createElementNS(svgns, "image");
-        assignAttributes(gridimg, {
-            'x': 0,
-            'y': 0,
-            'width': 100,
-            'height': 100
-        });
-        
-        gridPattern.appendChild(gridimg);
+        gridPattern.appendChild(gridPath);
         $('#svgroot defs').append(gridPattern);
 
         // grid-box
@@ -127,8 +127,7 @@ methodDraw.addExtension("view_grid", function(s) {
 		ctx.strokeStyle = "#000";
 		for(var i = 1; i < 10; i++) {
 			var sub_d = Math.round(part * i) + .5;
-// 					var line_num = (i % 2)?12:10;
-			var line_num = 0;
+			var line_num = (i % 2)?12:10;
 			ctx.moveTo(sub_d, big_int);
 			ctx.lineTo(sub_d, line_num);
 			ctx.moveTo(big_int, sub_d);
@@ -145,11 +144,11 @@ methodDraw.addExtension("view_grid", function(s) {
 		ctx.stroke();
 
 		var datauri = hcanv.toDataURL('image/png');
-		gridimg.setAttribute('width', big_int);
-		gridimg.setAttribute('height', big_int);
-		gridimg.parentNode.setAttribute('width', big_int);
-		gridimg.parentNode.setAttribute('height', big_int);
-		svgCanvas.setHref(gridimg, datauri);
+		gridPath.setAttribute('width', big_int);
+		gridPath.setAttribute('height', big_int);
+		gridPath.parentNode.setAttribute('width', big_int);
+		gridPath.parentNode.setAttribute('height', big_int);
+		svgCanvas.setHref(gridPath, datauri);
 	}
 
     return {
@@ -162,25 +161,24 @@ methodDraw.addExtension("view_grid", function(s) {
         buttons: [{
             id: "view_grid",
             type: "menu",
-            after: "tool_wireframe",
+            after: "tool_snap",
             panel: "view_menu",
-            title: "View Grid",
+            title: "Hide Grid",
             events: {
                 'click': function() {
-                    var gr = !$('#view_grid').hasClass('push_button_pressed');
+                    var gr = $('#view_grid').hasClass('push_button_pressed');
                     if (gr) {
                         methodDraw.curConfig.showGrid = showGrid = true;
-                        $('#view_grid').addClass('push_button_pressed');
+                        $('#view_grid').removeClass('push_button_pressed');
                         $('#canvasGrid').attr('display', 'inline');
                         updateGrid(svgCanvas.getZoom());
-                    }
-                    else {
+                    } else {
                         methodDraw.curConfig.showGrid = showGrid = false;
-                        $('#view_grid').removeClass('push_button_pressed');
+                        $('#view_grid').addClass('push_button_pressed');
                         $('#canvasGrid').attr('display', 'none');
                     }
                 }
             }
-}]
-        };
-    });
+        }]
+    };
+});
