@@ -195,6 +195,8 @@ canvas.setIdPrefix = function(p) {
 // @type {svgedit.draw.Drawing}
 canvas.current_drawing_ = new svgedit.draw.Drawing(svgcontent, idprefix);
 
+var current_rotate_mode = null;
+
 // Function: getCurrentDrawing
 // Returns the current Drawing.
 // @return {svgedit.draw.Drawing}
@@ -3153,7 +3155,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
         if (current_rotate_mode == "nw")  ccx = box.x + box.width;
         if (current_rotate_mode == "se")  ccy = box.y + box.height;
         if (current_rotate_mode == "sw"){ ccx = box.x + box.width; ccy = box.y + box.height;  }
-        compensation_angle = ((Math.atan2(cy-ccy,cx-ccx)  * (180/Math.PI))-90) % 360;
+        var compensation_angle = ((Math.atan2(cy-ccy,cx-ccx)  * (180/Math.PI))-90) % 360;
         var angle = ((Math.atan2(cy-y,cx-x)  * (180/Math.PI))-90) % 360;
         angle += compensation_angle;
         if(curConfig.gridSnapping){
