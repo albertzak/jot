@@ -24,6 +24,8 @@
 
 /*jslint browser: true*/
 
+"use strict";
+
 if(!window.console) {
   window.console = {};
   window.console.log = function(str) {};
@@ -650,7 +652,7 @@ var getIntersectionList = this.getIntersectionList = function(rect) {
 // 
 // Returns:
 // A single bounding box object
-getStrokedBBox = this.getStrokedBBox = function(elems) {
+var getStrokedBBox = this.getStrokedBBox = function(elems) {
   if(!elems) elems = getVisibleElements();
   if(!elems.length) return false;
   
@@ -1105,7 +1107,7 @@ var remapElement = this.remapElement = function(selected,changes,m) {
       if(doSnapping) for(var o in changes) changes[o] = snapToGrid(changes[o]);
       assignAttributes(selected, changes, 1000, true);
     }
-    box = svgedit.utilities.getBBox(selected);
+    var box = svgedit.utilities.getBBox(selected);
   
   for(var i = 0; i < 2; i++) {
     var type = i === 0 ? 'fill' : 'stroke';
@@ -2160,7 +2162,14 @@ var clearSelection = this.clearSelection = function(noCall) {
       selectedElements[i] = null;
     }
 //    selectedBBoxes[0] = null;
+
+    // Return to previous tool if selection was temporary
+    if (methodDraw.canvas.temporary != null) {
+      methodDraw.canvas.temporary.onFinish();
+      noCall = true;
+    }
   }
+
   if(!noCall) call("selected", selectedElements);
 };
 
@@ -2254,7 +2263,7 @@ var removeFromSelection = this.removeFromSelection = function(elemsToRemove) {
 
   // find every element and remove it from our array copy
   var newSelectedItems = new Array(selectedElements.length);
-    j = 0,
+  var j = 0,
     len = selectedElements.length;
   for (var i = 0; i < len; ++i) {
     var elem = selectedElements[i];
@@ -2734,7 +2743,8 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
       mouse_y = pt.y * current_zoom,
       shape = getElem(getId());
 
-    var real_x = x = mouse_x / current_zoom;
+    var x, y;
+    var real_x = x =mouse_x / current_zoom;
     var real_y = y = mouse_y / current_zoom;
 
     if(curConfig.gridSnapping){
@@ -2977,7 +2987,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
         var x2 = x;
         var y2 = y;         
 
-        if(evt.shiftKey) { var xya = snapToAngle(start_x,start_y,x2,y2); x2=xya.x; y2=xya.y; }
+        if(evt.shiftKey || (methodDraw.canvas.temporary != null)) { var xya = snapToAngle(start_x,start_y,x2,y2); x2=xya.x; y2=xya.y; }
         
         shape.setAttributeNS(null, "x2", x2);
         shape.setAttributeNS(null, "y2", y2);
@@ -3215,8 +3225,13 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
     var tempJustSelected = justSelected;
     justSelected = null;
     if (!started) return;
-    var pt = transformPoint( evt.pageX, evt.pageY, root_sctm ),
-      mouse_x = pt.x * current_zoom,
+
+
+
+    var pt = { x: root_sctm.a * evt.pageX + root_sctm.c * evt.pageY + root_sctm.e,
+      y: root_sctm.b * evt.pageX + root_sctm.d * evt.pageY + root_sctm.f
+    };
+    var mouse_x = pt.x * current_zoom,
       mouse_y = pt.y * current_zoom,
       x = mouse_x / current_zoom,
       y = mouse_y / current_zoom,
@@ -3336,6 +3351,14 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
         // Webkit ignores how we set the points attribute with commas and uses space
         // to separate all coordinates, see https://bugs.webkit.org/show_bug.cgi?id=29870
         var coords = element.getAttribute('points');
+
+        // Keep line if we're in temporary line mode
+        // if (!coords) { 
+          // var attrs = $(element).attr(["x1", "x2", "y1", "y2"]);
+          // keep = (attrs.x1 != attrs.x2 || attrs.y1 != attrs.y2);
+          // break;
+        // }
+
         var commaIndex = coords.indexOf(',');
         if (commaIndex >= 0) {
           keep = coords.indexOf(',', commaIndex+1) >= 0;
@@ -3349,6 +3372,11 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
       case "line":
         var attrs = $(element).attr(["x1", "x2", "y1", "y2"]);
         keep = (attrs.x1 != attrs.x2 || attrs.y1 != attrs.y2);
+
+        if (methodDraw.canvas.temporary != null) {
+          methodDraw.canvas.temporary.onFinish();
+        }
+
         break;
       case "foreignObject":
       case "square":
@@ -4071,7 +4099,7 @@ var pathActions = canvas.pathActions = function() {
     hasMoved = false,
     stretchy = null;
 
-  this.lastCtrlPoint = [0, 0];
+  var lastCtrlPoint = [0, 0];
   
   // This function converts a polyline (created by the fh_path tool) into
   // a path element and coverts every three line segments into a single bezier
@@ -4145,8 +4173,8 @@ var pathActions = canvas.pathActions = function() {
   return {
     mouseDown: function(evt, mouse_target, start_x, start_y) {
       if(current_mode === "path") {
-        mouse_x = start_x;
-        mouse_y = start_y;
+        var mouse_x = start_x;
+        var mouse_y = start_y;
         
         var x = mouse_x/current_zoom,
           y = mouse_y/current_zoom,
@@ -4178,8 +4206,8 @@ var pathActions = canvas.pathActions = function() {
         
         // if pts array is empty, create path element with M at current point
         if (!drawn_path) {
-          d_attr = "M" + x + "," + y + " ";
-          drawn_path = addSvgElementFromJson({
+          var d_attr = "M" + x + "," + y + " ";
+          var drawn_path = addSvgElementFromJson({
             "element": "path",
             "curStyles": true,
             "attr": {
@@ -5324,7 +5352,7 @@ this.svgCanvasToString = function() {
   }
   
   //hide grid, otherwise shows a black canvas
-  $('#canvasGrid').attr('display', 'none');
+  // $('#canvasGrid').attr('display', 'none');
   
   var naked_svgs = [];
   
@@ -6926,7 +6954,7 @@ this.setResolution = function(x, y) {
   
     addCommandToHistory(batchCmd);
     svgroot.unsuspendRedraw(handle);
-    background = document.getElementById("canvas_background");
+    var background = document.getElementById("canvas_background");
     if (background) {
       background.setAttribute("x", -1)
       background.setAttribute("y", -1)
@@ -7378,6 +7406,12 @@ this.setStrokeAttr = function(attr, val) {
 // Returns current style options
 this.getStyle = function() {
   return cur_shape;
+}
+
+// Function: getStarted
+// Returns whether a drawing action is in progress
+this.getStarted = function() {
+  return started;
 }
 
 // Function: getOpacity

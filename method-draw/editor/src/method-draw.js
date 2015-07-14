@@ -16,6 +16,8 @@
 // 2) browser.js
 // 3) svgcanvas.js
 
+"use strict";
+
 (function() {
   document.addEventListener("touchstart", touchHandler, true);
   document.addEventListener("touchmove", touchHandler, true);
@@ -26,9 +28,9 @@
     var svgCanvas;
     var Editor = {};
     var is_ready = false;
-    curConfig = {
+    var curConfig = {
       canvas_expansion: 1, 
-      dimensions: [580,400], 
+      dimensions: [794, 1123], // A4 at 96 DPI 
       initFill: {color: 'fff', opacity: 1},
       initStroke: {width: 1.5, color: '000', opacity: 1},
       initOpacity: 1,
@@ -36,7 +38,7 @@
       extPath: 'extensions/',
       jGraduatePath: 'jgraduate/images/',
       extensions: [],
-      initTool: 'select',
+      initTool: 'fhpath',
       wireframe: false,
       colorPickerCSS: false,
       showGrid: true,
@@ -660,7 +662,7 @@
         });
       };
       
-      var zoomChanged = function(window, bbox, autoCenter) {
+      var zoomChanged = function(_window, bbox, autoCenter) {
         var scrbar = 15,
           res = svgCanvas.getResolution(),
           w_area = workarea,
@@ -678,9 +680,10 @@
         // zoom duration 500ms
         var start = Date.now();
         var duration = 500;
-        var diff = (zoomlevel) - (res.zoom)
-        var zoom = $('#zoom')[0]
-        var current_zoom = res.zoom
+        var diff = (zoomlevel) - (res.zoom);
+        var zoom = $('#zoom')[0];
+        var current_zoom = res.zoom;
+        window.animatedZoom = null;
         var animateZoom = function(timestamp) {
           var progress = Date.now() - start
           var tick = progress / duration
@@ -1294,7 +1297,7 @@
       
       var createBackground = function(fill) {
         svgCanvas.createLayer("background")
-        cur_shape = svgCanvas.addSvgElementFromJson({
+        var cur_shape = svgCanvas.addSvgElementFromJson({
           "element": "rect",
           "attr": {
             "x": -1,
@@ -1667,7 +1670,7 @@
       var $indicator = $('#tool_angle_indicator')
       var $reorient = $('#tool_reorient')
       
-      rotateCursor = function(angle){
+      var rotateCursor = function(angle){
         var rotate_string = 'rotate('+ angle + 'deg)'
         $indicator.css({
           '-webkit-transform': rotate_string,
@@ -1742,7 +1745,7 @@
         svgCanvas.setTextContent(this.value);
       });
       
-      changeAttribute = function(el, completed) {
+      var changeAttribute = function(el, completed) {
         var attr = el.getAttribute("data-attr");
         var multiplier = el.getAttribute("data-multiplier") || 1;
         multiplier = parseFloat(multiplier);
@@ -1757,7 +1760,7 @@
         svgCanvas.changeSelectedAttributeNoUndo(attr, val);
       };
       
-      picking = false;
+      var picking = false;
       $(document).on("mouseup", function(){picking = false;})
 
       $('#palette').on("mousemove mousedown touchstart touchmove", ".palette_item", function(evt){
@@ -2186,6 +2189,44 @@
           svgCanvas.setMode('path');
         }
       };
+
+      // Temporary mode changes
+      // Draw straight lines with freehand tool
+      var beginTemporary = function(mode) {
+        if (svgCanvas.getMode() != 'line' && svgCanvas.getMode() != 'select' && ! svgCanvas.temporary) {
+          console.log('Entering Temporary Mode');
+          if (toolButtonClick('#tool_' + mode)) {
+            svgCanvas.temporary = { 
+              temporaryMode: mode, 
+              previousMode: svgCanvas.getMode(),
+              onFinish: function() {
+                if(svgCanvas.temporary && svgCanvas.temporary.shouldEnd) {
+                  if (toolButtonClick('#tool_' + svgCanvas.temporary.previousMode)) {
+                    svgCanvas.setMode(svgCanvas.temporary.previousMode);
+                  }
+                  svgCanvas.temporary = null;
+                  console.log('Exiting Temporary Mode');
+                }
+              }
+            };
+
+            svgCanvas.setMode(mode);
+          }
+        }
+      }
+
+      var endTemporary = function(mode) {
+        if (svgCanvas.temporary) {
+          // If drawing in progress, wait until finished before switching mode back
+          if (svgCanvas.getStarted()) {
+            console.log('Should End Temporary mode on finish');
+            svgCanvas.temporary.shouldEnd = true;
+          } else {
+            svgCanvas.temporary.shouldEnd = true;
+            svgCanvas.temporary.onFinish();
+          }
+        }
+      }
 
       // Delete is a contextual tool that only appears in the ribbon if
       // an element has been selected
@@ -3093,8 +3134,10 @@
     //  }
       
       var centerCanvas = function() {
-        // this centers the canvas vertically in the workarea (horizontal handled in CSS)
+        // Actually, don't center - start at the beginning of the document
+        // horizontal centering is handled in CSS
         workarea.css('line-height', workarea.height() + 'px');
+        workarea.scrollTop(0);
       };
       
       $(window).bind('load resize', centerCanvas);
@@ -3199,6 +3242,8 @@
           //animate
           var start = Date.now();
           var duration = 1000;
+          var label = $(this).data('label');
+
           var animateCanvasSize = function(timestamp) {
             var progress = Date.now() - start;
             var tick = progress / duration;
@@ -3210,7 +3255,13 @@
               var res = svgCanvas.getResolution()
               $('#canvas_width').val(res.w.toFixed())
               $('#canvas_height').val(res.h.toFixed())
-              $('#resolution_label').html("<div class='pull'>" + res.w + "<span>×</span></br>" + res.h + "</div>");
+              
+              if(label) {
+                $('#resolution_label').html(label);
+              } else {
+                $('#resolution_label').html("<div class='pull'>" + res.w + "<span>×</span></br>" + res.h + "</div>");
+              }
+
             }
             else {
               requestAnimationFrame(animateCanvasSize)
@@ -3291,8 +3342,8 @@
           {key: 'ctrl+shift+right', fn: function(){rotateSelected(1,5)}},
           {key: 'shift+O', fn: selectPrev},
           {key: 'shift+P', fn: selectNext},
-          {key: [modKey+'+', true], fn: function(){zoomImage(2);}},
-          {key: [modKey+'-', true], fn: function(){zoomImage(.5);}},
+          {key: [modKey+'++', true], fn: function(){zoomImage(2);}},
+          {key: [modKey+'+-', true], fn: function(){zoomImage(.5);}},
           {key: ['up', true], fn: function(){moveSelected(0,-1);}},
           {key: ['down', true], fn: function(){moveSelected(0,1);}},
           {key: ['left', true], fn: function(){moveSelected(-1,0);}},
@@ -3311,6 +3362,10 @@
           {key: ['alt+shift+right', true], fn: function(){svgCanvas.cloneSelectedElements(10,0)}},  
           {key: modKey + 'A', fn: function(){svgCanvas.selectAllInCurrentLayer();}},
           {key: 'I', fn: function(){setEyedropperMode()}},
+
+          // Temporary tool change
+          {key: ['alt+L', true], fn: function(){beginTemporary('line')}, fnUp: function(){endTemporary('line')}},
+          {key: ['alt+V', true], fn: function(){beginTemporary('select')}},
 
           // Standard shortcuts
           {key: modKey + 'shift+z', fn: clickRedo},
@@ -3380,6 +3435,25 @@
                     // Prevent default on ALL keys?
                     return false;
                   });
+
+                  if (opts.fnUp) {
+                    $(document).bind('keyup', keyval, function(e) {
+                      opts.fnUp();
+                      if(pd) {
+                        e.preventDefault();
+                      }
+                    });
+                  }
+
+                  if (opts.fnKeypress) {
+                    $(document).bind('keypress', keyval, function(e) {
+                      opts.fnKeypress();
+                      if(pd) {
+                        e.preventDefault();
+                      }
+                    });
+                  }
+
                 });
                 
                 // Put shortcut in title
