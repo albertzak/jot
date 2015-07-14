@@ -21,10 +21,12 @@ app.on('window-all-closed', function() {
 // initialization and ready for creating browser windows.
 app.on('ready', function() {
   var electronScreen = require('screen');
-  var size = electronScreen.getPrimaryDisplay().workAreaSize;
+  var display = electronScreen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
-    'width': size.width,
-    'height': size.height,
+    x: display.x + 50,
+    y: display.y + 50,
+    width: display.width - 100,
+    height: display.height - 100,
     'disable-auto-hide-cursor': true,
     'web-preferences': {
       'text-areas-are-resizable': false,
