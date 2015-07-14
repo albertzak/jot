@@ -27,6 +27,8 @@ app.on('ready', function() {
     y: display.y + 50,
     width: display.width - 100,
     height: display.height - 100,
+    'min-width': 560,
+    'min-height': 426,
     'disable-auto-hide-cursor': true,
     'web-preferences': {
       'text-areas-are-resizable': false,
