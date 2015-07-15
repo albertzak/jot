@@ -3557,6 +3557,8 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
   };
   
   var dblClick = function(evt) {
+    if (current_mode === 'fhpath') return;
+
     var evt_target = evt.target;
     var parent = evt_target.parentNode;
     var mouse_target = getMouseTarget(evt);
@@ -8789,7 +8791,7 @@ this.cloneSelectedElements = function(x,y, drag) {
   // note that we loop in the reverse way because of the way elements are added
   // to the selectedElements array (top-first)
   var i = copiedElements.length;
-  clones = []
+  var clones = [];
   while (i--) {
     // clone each element and replace it within copiedElements
     var elem = copiedElements[i] 

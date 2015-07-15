@@ -19,15 +19,14 @@
 "use strict";
 
 (function() {
-  document.addEventListener("touchstart", touchHandler, true);
-  document.addEventListener("touchmove", touchHandler, true);
-  document.addEventListener("touchend", touchHandler, true);
-  document.addEventListener("touchcancel", touchHandler, true);
-  
+
   if(!window.methodDraw) window.methodDraw = function($) {
     var svgCanvas;
     var Editor = {};
     var is_ready = false;
+
+    var remote = require('remote');
+
     var curConfig = {
       canvas_expansion: 1, 
       dimensions: [794, 1123], // A4 at 96 DPI 
@@ -1705,6 +1704,8 @@
           zoom: zoomlevel
         }, true);
       }
+
+      Editor.changeZoom = changeZoom;
       
       var changeBlur = function(ctl, completed) {
         val = ctl.value;
@@ -2170,6 +2171,16 @@
           svgCanvas.setMode('zoom');
         }
       };
+
+      var clickZoomIn = function() {
+        var currentZoom = svgCanvas.getZoom() * 100;
+        changeZoom({value: currentZoom + 15});
+      }
+
+      var clickZoomOut = function() {
+        var currentZoom = svgCanvas.getZoom() * 100;
+        changeZoom({value: currentZoom - 15});
+      }
     
       var dblclickZoom = function(){
         if (toolButtonClick('#tool_zoom')) {
@@ -2194,7 +2205,6 @@
       // Draw straight lines with freehand tool
       var beginTemporary = function(mode) {
         if (svgCanvas.getMode() != 'line' && svgCanvas.getMode() != 'select' && ! svgCanvas.temporary) {
-          console.log('Entering Temporary Mode');
           if (toolButtonClick('#tool_' + mode)) {
             svgCanvas.temporary = { 
               temporaryMode: mode, 
@@ -2205,7 +2215,6 @@
                     svgCanvas.setMode(svgCanvas.temporary.previousMode);
                   }
                   svgCanvas.temporary = null;
-                  console.log('Exiting Temporary Mode');
                 }
               }
             };
@@ -2219,7 +2228,6 @@
         if (svgCanvas.temporary) {
           // If drawing in progress, wait until finished before switching mode back
           if (svgCanvas.getStarted()) {
-            console.log('Should End Temporary mode on finish');
             svgCanvas.temporary.shouldEnd = true;
           } else {
             svgCanvas.temporary.shouldEnd = true;
@@ -2476,7 +2484,7 @@
       
       var clickClone = function(){
         flash($('#edit_menu'));
-        svgCanvas.cloneSelectedElements(20,20);
+        svgCanvas.cloneSelectedElements(0, 57);
       };
       
       var clickAlign = function() {
@@ -3284,13 +3292,13 @@
         // sel:'selector', fn:function, evt:'event', key:[key, preventDefault, NoDisableInInput]
         var tool_buttons = [
           {sel:'#tool_select', fn: clickSelect, evt: 'click', key: ['V', true]},
-          {sel:'#tool_fhpath', fn: clickFHPath, evt: 'click', key: ['Q', true]},
+          {sel:'#tool_fhpath', fn: clickFHPath, evt: 'click', key: ['P', true]},
           {sel:'#tool_line', fn: clickLine, evt: 'click', key: ['L', true]},
           {sel:'#tool_rect', fn: clickRect, evt: 'click', key: ['R', true], icon: 'rect'},
           {sel:'#tool_ellipse', fn: clickEllipse, evt: 'mouseup', key: ['C', true], icon: 'ellipse'},
           //{sel:'#tool_circle', fn: clickCircle, evt: 'mouseup', icon: 'circle'},
           //{sel:'#tool_fhellipse', fn: clickFHEllipse, evt: 'mouseup', parent: '#tools_ellipse', icon: 'fh_ellipse'},
-          {sel:'#tool_path', fn: clickPath, evt: 'click', key: ['P', true]},
+          {sel:'#tool_path', fn: clickPath, evt: 'click', key: ['Q', true]},
           {sel:'#tool_text', fn: clickText, evt: 'click', key: ['T', true]},
           {sel:'#tool_image', fn: clickImage, evt: 'mouseup'},
           {sel:'#tool_zoom', fn: clickZoom, evt: 'mouseup', key: ['Z', true]},
@@ -3342,7 +3350,7 @@
           {key: 'ctrl+shift+right', fn: function(){rotateSelected(1,5)}},
           {key: 'shift+O', fn: selectPrev},
           {key: 'shift+P', fn: selectNext},
-          {key: [modKey+'++', true], fn: function(){zoomImage(2);}},
+          {key: [modKey+'+=', true], fn: function(){zoomImage(2);}},
           {key: [modKey+'+-', true], fn: function(){zoomImage(.5);}},
           {key: ['up', true], fn: function(){moveSelected(0,-1);}},
           {key: ['down', true], fn: function(){moveSelected(0,1);}},
@@ -3524,6 +3532,459 @@
       }();
       
       Actions.setAll();
+
+      // Set up native menu bar
+
+      (function() {        
+
+        var Menu = remote.require('menu');
+        var structure = [
+          {
+            label: 'Jotpad',
+            submenu: [
+              {
+                label: 'About Jotpad',
+                selector: 'orderFrontStandardAboutPanel:'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Services',
+                submenu: []
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Hide Jotpad',
+                accelerator: 'CommandOrControl+H',
+                selector: 'hide:'
+              },
+              {
+                label: 'Hide Others',
+                accelerator: 'CommandOrControl+Shift+H',
+                selector: 'hideOtherApplications:'
+              },
+              {
+                label: 'Show All',
+                selector: 'unhideAllApplications:'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Quit',
+                accelerator: 'CommandOrControl+Q',
+                selector: 'terminate:'
+              },
+            ]
+          },
+          {
+            label: 'File',
+            submenu: [
+              {
+                label: 'New',
+                accelerator: 'CommandOrControl+N',
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Open',
+                accelerator: 'CommandOrControl+O',
+              },
+              {
+                label: 'Recent Documents',
+                submenu: []
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Annotate PDF',
+                accelerator: 'CommandOrControl+Shift+O',
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Save',
+                accelerator: 'CommandOrControl+S',
+              },
+              {
+                label: 'Save As',
+                accelerator: 'CommandOrControl+Shift+S',
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Print',
+                accelerator: 'CommandOrControl+P',
+              },
+              {
+                label: 'Export as PDF',
+                accelerator: 'CommandOrControl+Shift+P',
+              }
+            ]
+          },
+          {
+            label: 'Edit',
+            submenu: [
+              {
+                label: 'Undo',
+                accelerator: 'CommandOrControl+Z',
+                selector: 'undo:',
+                click: clickUndo
+              },
+              {
+                label: 'Redo',
+                accelerator: 'Shift+CommandOrControl+Z',
+                selector: 'redo:',
+                click: clickRedo
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Cut',
+                accelerator: 'CommandOrControl+X',
+                selector: 'cut:',
+                click: cutSelected
+              },
+              {
+                label: 'Copy',
+                accelerator: 'CommandOrControl+C',
+                selector: 'copy:',
+                click: copySelected
+              },
+              {
+                label: 'Duplicate',
+                accelerator: 'CommandOrControl+D',
+                selector: 'duplicate:',
+                click: clickClone
+              },
+              {
+                label: 'Paste',
+                accelerator: 'CommandOrControl+V',
+                selector: 'paste:',
+                click: pasteSelected
+              },
+              {
+                label: 'Delete',
+                accelerator: 'Backspace',
+                selector: 'delete:',
+                click: deleteSelected
+              },
+              {
+                label: 'Select All',
+                accelerator: 'CommandOrControl+A',
+                selector: 'selectAll:',
+                click: function(){svgCanvas.selectAllInCurrentLayer();}
+              }
+            ]
+          },
+          {
+            label: 'View',
+            submenu: [
+              {
+                label: 'Full Screen',
+                accelerator: 'CommandOrControl+F',
+                click: function(){
+                  var w = remote.getCurrentWindow();
+                  w.setFullScreen(!w.isFullScreen());
+                }
+              },
+              {
+                label: 'Zoom',
+                submenu: [
+                  {
+                    label: '25%',
+                    click: function(){changeZoom({value: 25})}
+                  },
+                  {
+                    label: '50%',
+                    click: function(){changeZoom({value: 50})}
+
+                  },
+                  {
+                    label: '75%',
+                    click: function(){changeZoom({value: 75})}
+
+                  },
+                  {
+                    type: 'separator'
+                  },
+                  {
+                    label: '100%',
+                    click: function(){changeZoom({value: 100})}
+
+                  },
+                  {
+                    type: 'separator'
+                  },
+                  {
+                    label: '125%',
+                    click: function(){changeZoom({value: 125})}
+
+                  },
+                  {
+                    label: '150%',
+                    click: function(){changeZoom({value: 150})}
+
+                  },
+                  {
+                    label: '200%',
+                    click: function(){changeZoom({value: 200})}
+
+                  },
+                  {
+                    label: '300%',
+                    click: function(){changeZoom({value: 300})}
+
+                  }
+                ]
+              },
+              {
+                label: 'Zoom In',
+                accelerator: 'CommandOrControl+=',
+                click: clickZoomIn
+              },
+              {
+                label: 'Zoom Out',
+                accelerator: 'CommandOrControl+-',
+                click: clickZoomOut
+              },
+              {
+                label: 'Original Size',
+                accelerator: 'CommandOrControl+0',
+                click: function(){changeZoom({value: 100})}
+              },
+              {
+                label: 'Fit Width',
+                accelerator: 'CommandOrControl+2'
+              },
+              {
+                label: 'Fit Page',
+                accelerator: 'CommandOrControl+1'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'First Page',
+                accelerator: 'CommandOrControl+Shift+Up'
+              },
+              {
+                label: 'Previous Page',
+                accelerator: 'Shift+Up'
+              },
+              {
+                label: 'Next Page',
+                accelerator: 'Shift+Down'
+              },
+              {
+                label: 'Last Page',
+                accelerator: 'CommandOrControl+Shift+Down'
+              },
+              {
+                type: 'separator'
+              }
+            ]
+          },
+          {
+            label: 'Page',
+            submenu: [
+              {
+                label: 'Insert Page Before'
+              },
+              {
+                label: 'Insert Page After',
+                accelerator: 'CommandOrControl+I'
+              },
+              {
+                label: 'Insert Page At End',
+                accelerator: 'CommandOrControl+Shift+I'
+              },
+              {
+                label: 'Delete Page',
+                accelerator: 'CommandOrControl+Backspace'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Add pages automatically'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Paper Size'
+              },
+              {
+                label: 'Paper Color'
+              },
+              {
+                label: 'Paper Style',
+                submenu: [
+                  {
+                    label: 'Grid'
+                  },
+                  {
+                    label: 'Lines'
+                  }
+                ]
+              },
+              {
+                label: 'Set As Default'
+              },
+            ]
+          },
+          {
+            label: 'Tool',
+            submenu: [
+              {
+                label: 'Select',
+                accelerator: 'V',
+                click: clickSelect
+              },
+              {
+                label: 'Pan',
+                accelerator: 'H'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Pencil',
+                accelerator: 'P',
+                click: clickFHPath
+              },
+              {
+                label: 'Eraser',
+                accelerator: 'E'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Line',
+                accelerator: 'L',
+                click: clickLine
+              },
+              {
+                label: 'Rectangle',
+                accelerator: 'R',
+                click: clickRect
+              },
+              {
+                label: 'Ellipse',
+                accelerator: 'C',
+                click: clickEllipse
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Text',
+                accelerator: 'T',
+                click: clickText
+              },
+              {
+                label: 'Highlighter',
+                accelerator: 'H'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Insert Image',
+                accelerator: 'CommandOrControl+Shift+I'
+              },
+              {
+                label: 'Pick Color',
+                accelerator: 'CommandOrControl+Shift+C'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Pen Options'
+              },
+              {
+                label: 'Eraser Options'
+              },
+              {
+                label: 'Highlighter Options'
+              },
+              {
+                label: 'Text Font'
+              },
+              {
+                label: 'Default Pen'
+              },
+              {
+                label: 'Default Eraser'
+              },
+              {
+                label: 'Default Text'
+              },
+              {
+                label: 'Set As Default'
+              },
+            ]
+          },
+
+          {
+            label: 'Window',
+            submenu: [
+              {
+                label: 'Minimize',
+                accelerator: 'CommandOrControl+M',
+                selector: 'performMiniaturize:'
+              },
+              {
+                label: 'Close',
+                accelerator: 'CommandOrControl+W',
+                selector: 'performClose:'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Bring All to Front',
+                selector: 'arrangeInFront:'
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Reload',
+                accelerator: 'CommandOrControl+R',
+                click: function() { remote.getCurrentWindow().reload(); }
+              },
+              {
+                label: 'Toggle Developer Tools',
+                accelerator: 'Alt+CommandOrControl+I',
+                click: function() { remote.getCurrentWindow().toggleDevTools(); }
+              }
+            ]
+          },
+          {
+            label: 'Help',
+            submenu: [
+              {
+                label: 'Check for Updates'
+              }
+            ]
+          }
+        ];
+
+        var menu = Menu.buildFromTemplate(structure);
+        Menu.setApplicationMenu(menu);
+      }());
       
       // Select given tool
       Editor.ready(function() {
