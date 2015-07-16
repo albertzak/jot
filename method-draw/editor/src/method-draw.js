@@ -3595,6 +3595,7 @@
               {
                 label: 'New',
                 accelerator: 'CommandOrControl+N',
+                enabled: false
               },
               {
                 type: 'separator'
@@ -3602,10 +3603,11 @@
               {
                 label: 'Open',
                 accelerator: 'CommandOrControl+O',
+                enabled: false
               },
               {
                 label: 'Recent Documents',
-                submenu: []
+                enabled: false
               },
               {
                 type: 'separator'
@@ -3613,6 +3615,7 @@
               {
                 label: 'Annotate PDF',
                 accelerator: 'CommandOrControl+Shift+O',
+                enabled: false
               },
               {
                 type: 'separator'
@@ -3620,10 +3623,12 @@
               {
                 label: 'Save',
                 accelerator: 'CommandOrControl+S',
+                enabled: false
               },
               {
                 label: 'Save As',
                 accelerator: 'CommandOrControl+Shift+S',
+                enabled: false
               },
               {
                 type: 'separator'
@@ -3631,10 +3636,12 @@
               {
                 label: 'Print',
                 accelerator: 'CommandOrControl+P',
+                enabled: false
               },
               {
                 label: 'Export as PDF',
                 accelerator: 'CommandOrControl+Shift+P',
+                enabled: false
               }
             ]
           },
@@ -3772,30 +3779,36 @@
               },
               {
                 label: 'Fit Width',
-                accelerator: 'CommandOrControl+2'
+                accelerator: 'CommandOrControl+2',
+                enabled: false
               },
               {
                 label: 'Fit Page',
-                accelerator: 'CommandOrControl+1'
+                accelerator: 'CommandOrControl+1',
+                enabled: false
               },
               {
                 type: 'separator'
               },
               {
                 label: 'First Page',
-                accelerator: 'CommandOrControl+Shift+Up'
+                accelerator: 'CommandOrControl+Shift+Up',
+                enabled: false
               },
               {
                 label: 'Previous Page',
-                accelerator: 'Shift+Up'
+                accelerator: 'Shift+Up',
+                enabled: false
               },
               {
                 label: 'Next Page',
-                accelerator: 'Shift+Down'
+                accelerator: 'Shift+Down',
+                enabled: false
               },
               {
                 label: 'Last Page',
-                accelerator: 'CommandOrControl+Shift+Down'
+                accelerator: 'CommandOrControl+Shift+Down',
+                enabled: false
               },
               {
                 type: 'separator'
@@ -3811,48 +3824,45 @@
             label: 'Page',
             submenu: [
               {
-                label: 'Insert Page Before'
+                label: 'Insert Page Before',
+                enabled: false
               },
               {
                 label: 'Insert Page After',
-                accelerator: 'CommandOrControl+I'
+                accelerator: 'CommandOrControl+I',
+                enabled: false
               },
               {
                 label: 'Insert Page At End',
-                accelerator: 'CommandOrControl+Shift+I'
+                accelerator: 'CommandOrControl+Shift+I',
+                enabled: false
               },
               {
                 label: 'Delete Page',
-                accelerator: 'CommandOrControl+Backspace'
+                accelerator: 'CommandOrControl+Backspace',
+                enabled: false
               },
               {
                 type: 'separator'
               },
               {
-                label: 'Add pages automatically'
+                label: 'Add pages automatically',
+                enabled: false
               },
               {
                 type: 'separator'
               },
               {
-                label: 'Paper Size'
+                label: 'Paper Size',
+                enabled: false
               },
               {
-                label: 'Paper Color'
+                label: 'Paper Color',
+                enabled: false
               },
               {
                 label: 'Paper Style',
-                submenu: [
-                  {
-                    label: 'Grid'
-                  },
-                  {
-                    label: 'Lines'
-                  }
-                ]
-              },
-              {
-                label: 'Set As Default'
+                enabled: false
               },
             ]
           },
@@ -3908,18 +3918,21 @@
               },
               {
                 label: 'Highlighter',
-                accelerator: 'H'
+                accelerator: 'H',
+                enabled: false
               },
               {
                 type: 'separator'
               },
               {
                 label: 'Insert Image',
-                accelerator: 'CommandOrControl+Shift+I'
+                accelerator: 'CommandOrControl+Shift+I',
+                enabled: false
               },
               {
                 label: 'Pick Color',
-                accelerator: 'CommandOrControl+Shift+C'
+                accelerator: 'CommandOrControl+Shift+C',
+                enabled: false
               },
               {
                 type: 'separator'
@@ -3990,7 +4003,8 @@
             label: 'Help',
             submenu: [
               {
-                label: 'Check for Updates'
+                label: 'Check for Updates',
+                enabled: false
               }
             ]
           }
