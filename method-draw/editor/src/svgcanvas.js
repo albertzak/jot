@@ -3559,45 +3559,6 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
     start_transform = null;
   };
   
-  var dblClick = function(evt) {
-    if (current_mode === 'fhpath') return;
-
-    var evt_target = evt.target;
-    var parent = evt_target.parentNode;
-    var mouse_target = getMouseTarget(evt);
-    var tagName = mouse_target.tagName;
-
-    if(parent === current_group) return;
-    
-    if(tagName === 'text' && current_mode !== 'textedit') {
-      var pt = transformPoint( evt.pageX, evt.pageY, root_sctm );
-      textActions.select(mouse_target, pt.x, pt.y);
-    }
-    
-    if((tagName === "g" || tagName === "a") && getRotationAngle(mouse_target)) {
-      // TODO: Allow method of in-group editing without having to do 
-      // this (similar to editing rotated paths)
-    
-      // Ungroup and regroup
-      pushGroupProperties(mouse_target);
-      mouse_target = selectedElements[0];
-      clearSelection(true);
-    }
-    // Reset context
-    if(current_group) {
-      leaveContext();
-    }
-    
-    if((parent.tagName !== 'g' && parent.tagName !== 'a') ||
-      parent === getCurrentDrawing().getCurrentLayer() ||
-      mouse_target === selectorManager.selectorParentGroup)
-    {
-      // Escape from in-group edit
-      return;
-    }
-    setContext(mouse_target);
-  }
-
   // prevent links from being followed in the canvas
   var handleLinkInCanvas = function(e) {
     e.preventDefault();
@@ -3606,7 +3567,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
   
   // Added mouseup to the container here.
   // TODO(codedread): Figure out why after the Closure compiler, the window mouseup is ignored.
-  $(container).mousedown(mouseDown).mousemove(mouseMove).click(handleLinkInCanvas).dblclick(dblClick).mouseup(mouseUp);
+  $(container).mousedown(mouseDown).mousemove(mouseMove).click(handleLinkInCanvas).mouseup(mouseUp);
 //  $(window).mouseup(mouseUp);
   
   $(container).bind("mousewheel DOMMouseScroll", function(e){
