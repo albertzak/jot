@@ -1,14 +1,15 @@
-var app = require('app');  // Module to control application life.
-var BrowserWindow = require('browser-window');  // Module to create native browser window.
+var app           = require('app');
+var BrowserWindow = require('browser-window');
+var ipc           = require('ipc');
+var dialog        = require('dialog');
+var fs            = require('fs');
 
-// Report crashes to our server.
 require('crash-reporter').start();
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
 var mainWindow = null;
 
-// Quit when all windows are closed.
 app.on('window-all-closed', function() {
   // On OSX it is common for applications and their menu bar 
   // to stay active until the user quits explicitly with Cmd + Q
@@ -17,8 +18,6 @@ app.on('window-all-closed', function() {
   }
 });
 
-// This method will be called when Electron has done everything
-// initialization and ready for creating browser windows.
 app.on('ready', function() {
   var electronScreen = require('screen');
   var display = electronScreen.getPrimaryDisplay().workAreaSize;
@@ -30,6 +29,7 @@ app.on('ready', function() {
     'min-width': 560,
     'min-height': 426,
     'disable-auto-hide-cursor': true,
+    'dark-theme': true,
     'web-preferences': {
       'text-areas-are-resizable': false,
       'experimental-canvas-features': true,
@@ -38,10 +38,18 @@ app.on('ready', function() {
     }
   });
 
-  // and load the index.html of the app.
   mainWindow.loadUrl('file://' + __dirname + '/../method-draw/editor/index.html');
 
-  // Emitted when the window is closed.
+  ipc.on('save-as', function(e, args) {
+    var filePath = dialog.showSaveDialog(mainWindow, args.options);
+    if (!filePath) return;
+
+    fs.writeFile(filePath, args.data, function(err) {
+      if (err != null) dialog.showErrorBox("Couldn't save File", err);
+    });
+  });
+
+
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time

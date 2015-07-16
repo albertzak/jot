@@ -221,8 +221,6 @@ $(function() {
 				.load(function () {
 					// Safari 4 crashes, Opera and Chrome don't
 					makeIcons(true);
-				}).error(function () {
-					makeIcons();
 				});
 			} else {
 				setTimeout(function() {
