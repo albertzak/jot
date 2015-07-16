@@ -26,16 +26,17 @@
     var is_ready = false;
 
     var remote = require('remote');
+    var clipboard = remote.require('clipboard');
 
     var curConfig = {
       canvas_expansion: 1, 
       dimensions: [794, 1123], // A4 at 96 DPI 
-      initFill: {color: 'fff', opacity: 1},
+      initFill: {color: '000', opacity: 1},
       initStroke: {width: 1.5, color: '000', opacity: 1},
       initOpacity: 1,
       imgPath: 'images/',
       extPath: 'extensions/',
-      jGraduatePath: 'jgraduate/images/',
+      jGraduatePath: 'lib/jgraduate/images/',
       extensions: [],
       initTool: 'fhpath',
       wireframe: false,
@@ -2249,57 +2250,65 @@
     
       var cutSelected = function() {
         if (selectedElement != null || multiselected) {
-          flash($('#edit_menu'));
           svgCanvas.cutSelectedElements();
         }
       };
       
       var copySelected = function() {
-        if (selectedElement != null || multiselected) {
-          flash($('#edit_menu'));
+        var currentMode = svgCanvas.getMode();
+        if (currentMode === 'textedit') {
+          var selectedText = svgCanvas.textActions.getSelectedText();
+          if (selectedText != null) clipboard.writeText(selectedText);
+        } else if (selectedElement != null || multiselected) {
           svgCanvas.copySelectedElements();
         }
       };
       
       var pasteSelected = function() {
-        flash($('#edit_menu'));
-        var zoom = svgCanvas.getZoom();       
-        var x = (workarea[0].scrollLeft + workarea.width()/2)/zoom  - svgCanvas.contentW; 
-        var y = (workarea[0].scrollTop + workarea.height()/2)/zoom  - svgCanvas.contentH;
-        svgCanvas.pasteElements('point', x, y); 
+        var currentMode = svgCanvas.getMode();
+        if (currentMode === 'text' || currentMode === 'textedit') {
+          var pastedString = clipboard.readText();
+          var textEl, cursorPos, result;
+          if (pastedString) {
+            textEl = $('#text');
+            cursorPos = textEl.getCursorPosition();
+            result = textEl.val().splice(cursorPos, 0, pastedString);
+            textEl.val(result);
+          }
+        } else {
+          var zoom = svgCanvas.getZoom();
+          var x = (workarea[0].scrollLeft + workarea.width()/2)/zoom  - svgCanvas.contentW;
+          var y = (workarea[0].scrollTop + workarea.height()/2)/zoom  - svgCanvas.contentH;
+          svgCanvas.pasteElements('point', x, y + 57);
+        }
       }
       
       var moveToTopSelected = function() {
         if (selectedElement != null) {
-          flash($('#object_menu'));
           svgCanvas.moveToTopSelectedElement();
         }
       };
       
       var moveToBottomSelected = function() {
         if (selectedElement != null) {
-          flash($('#object_menu'));
           svgCanvas.moveToBottomSelectedElement();
         }
       };
       
       var moveUpSelected = function() {
         if (selectedElement != null) {
-        flash($('#object_menu'));
           svgCanvas.moveUpDownSelected("Up");
         }
       };
 
       var moveDownSelected = function() {
         if (selectedElement != null) {
-          flash($('#object_menu'));
           svgCanvas.moveUpDownSelected("Down");
         }
       };
       
       var moveUpDownSelected = function(dir) {
         if (selectedElement != null) {
-          flash($('#object_menu'));
           svgCanvas.moveUpDownSelected(dir);
         }
       };
@@ -2457,33 +2466,37 @@
       
       var clickUndo = function(){
         if (undoMgr.getUndoStackSize() > 0) {
-          flash($('#edit_menu'));
           undoMgr.undo();
         }
       };
     
       var clickRedo = function(){
         if (undoMgr.getRedoStackSize() > 0) {
-          flash($('#edit_menu'));
           undoMgr.redo();
         }
       };
+
+      var clickSelectAll = function(){
+        var currentMode = svgCanvas.getMode();
+        if(currentMode === 'textedit') {
+          svgCanvas.textActions.selectAllText();
+        } else {
+          svgCanvas.selectAllInCurrentLayer();
+        }
+      }
       
       var clickGroup = function(){
         // group
         if (multiselected) {
-          flash($('#object_menu'));
           svgCanvas.groupSelectedElements();
         }
         // ungroup
         else if(selectedElement){
-          flash($('#object_menu'));
           svgCanvas.ungroupSelectedElement();
         }
       };
       
       var clickClone = function(){
-        flash($('#edit_menu'));
         svgCanvas.cloneSelectedElements(0, 57);
       };
       
@@ -2527,7 +2540,6 @@
       }
     
       var clickWireframe = function() {
-        flash($('#view_menu'));
         var wf = !$('#tool_wireframe').hasClass('push_button_pressed');
         if (wf) 
           $('#tool_wireframe').addClass('push_button_pressed');
@@ -2547,7 +2559,6 @@
       }
       
       var clickSnapGrid = function() {
-        flash($('#view_menu'));
         var sg = !$('#tool_snap').hasClass('push_button_pressed');
         if (sg) 
           $('#tool_snap').addClass('push_button_pressed');
@@ -2564,7 +2575,6 @@
       }
       
       var clickRulers = function() {
-        flash($('#view_menu'));
         var rulers = !$('#tool_rulers').hasClass('push_button_pressed');
         if (rulers) {
           $('#tool_rulers').addClass('push_button_pressed');
@@ -2589,7 +2599,6 @@
     
       var showSourceEditor = function(e, forSaving){
         if (editingsource) return;
-        flash($('#view_menu'));
         editingsource = true;
         
         $('#save_output_btns').toggle(!!forSaving);
@@ -2602,7 +2611,6 @@
       };
       
       var clickSave = function(){
-        flash($('#file_menu'));
         // In the future, more options can be provided here
         var saveOpts = {
           'images': curPrefs.img_save,
@@ -3368,7 +3376,7 @@
           {key: ['alt+shift+down', true], fn: function(){svgCanvas.cloneSelectedElements(0,10)}},
           {key: ['alt+shift+left', true], fn: function(){svgCanvas.cloneSelectedElements(-10,0)}},
           {key: ['alt+shift+right', true], fn: function(){svgCanvas.cloneSelectedElements(10,0)}},  
-          {key: modKey + 'A', fn: function(){svgCanvas.selectAllInCurrentLayer();}},
+          {key: modKey + 'A', fn: clickSelectAll},
           {key: 'I', fn: function(){setEyedropperMode()}},
 
           // Temporary tool change
@@ -3681,7 +3689,7 @@
                 label: 'Select All',
                 accelerator: 'CommandOrControl+A',
                 selector: 'selectAll:',
-                click: function(){svgCanvas.selectAllInCurrentLayer();}
+                click: clickSelectAll
               }
             ]
           },
@@ -3790,6 +3798,11 @@
               },
               {
                 type: 'separator'
+              },
+              {
+                label: 'Show Source',
+                accelerator: 'CommandOrControl+Shift+U',
+                click: showSourceEditor
               }
             ]
           },

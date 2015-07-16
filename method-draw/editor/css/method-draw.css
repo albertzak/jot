@@ -539,9 +539,9 @@ html, body {
  div#workarea {
 	display: inline-table-cell;
 	position:absolute;
-	top: 0px;
+	top: 0;
 	left: 50px;
-	bottom: 40px;
+	bottom: 0;
 	right: 0;
 	background-color: #444;
 	overflow: auto;
@@ -1045,6 +1045,7 @@ box-shadow: inset 0 3px 10px rgba(255, 255, 255, 0.1),
 	height: 40px;
 	overflow: visible;
 	background: #2f2f2c;
+  display: none;
 }
 
  #tools_bottom_1 {

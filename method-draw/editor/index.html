@@ -24,6 +24,7 @@
   <script type="text/javascript" src="method-draw.compiled.js"></script>
 <!{else}-->
   <!-- <script type="text/javascript" src="lib/touch.js"></script> -->
+  <script type="text/javascript" src="lib/util.js"></script>
   <script type="text/javascript" src="lib/js-hotkeys/jquery.hotkeys.min.js"></script>
   <script type="text/javascript" src="lib/jquerybbq/jquery.bbq.min.js"></script>
   <script type="text/javascript" src="icons/jquery.svgicons.js"></script>
@@ -80,6 +81,9 @@
 
 </div>
 </div>
+
+<!-- Not visible, but still used -->
+<textarea id="text" type="text" size="35"></textarea>
 
 <div id="menu_bar">
   <a class="menu">
@@ -337,8 +341,6 @@
 			<input id="font_size" size="3" value="0" />
 			<span id="font_sizeLabel" class="icon_label">Font Size</span>
 		</label>
-		<!-- Not visible, but still used -->
-		<input id="text" type="text" size="35"/>
 	</div>
 
 	<!-- formerly gsvg_panel -->

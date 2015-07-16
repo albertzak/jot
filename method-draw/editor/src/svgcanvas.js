@@ -2608,6 +2608,7 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
           "attr": {
             "x": x,
             "y": y,
+            "fill": "none",
             "width": 0,
             "height": 0,
             "id": getNextId(),
@@ -2649,7 +2650,8 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
             "cy": y,
             "r": 0,
             "id": getNextId(),
-            "opacity": cur_shape.opacity / 2
+            "opacity": cur_shape.opacity / 2,
+            "fill": "none"
           }
         });
         break;
@@ -2664,7 +2666,8 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
             "rx": 0,
             "ry": 0,
             "id": getNextId(),
-            "opacity": cur_shape.opacity / 2
+            "opacity": cur_shape.opacity / 2,
+            "fill": "none"
           }
         });
         break;
@@ -2677,8 +2680,8 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
             "x": x,
             "y": y,
             "id": getNextId(),
-            "fill": cur_text.fill,
-            "stroke-width": cur_text.stroke_width,
+            "fill": curConfig.initStroke.color,
+            "stroke-width": 0,
             "font-size": cur_text.font_size,
             "font-family": cur_text.font_family,
             "text-anchor": "left",
@@ -3663,6 +3666,7 @@ var textActions = canvas.textActions = function() {
   var matrix;
   var last_x, last_y;
   var allow_dbl;
+  var cursel;
   
   function setCursor(index) {
     var empty = (textinput.value === "");
@@ -3722,6 +3726,8 @@ var textActions = canvas.textActions = function() {
       setCursor(end);
       return;
     }
+
+    cursel = curtext.textContent.substr(start, end-start);
   
     if(!skipInput) {
       textinput.setSelectionRange(start, end);
@@ -3733,8 +3739,8 @@ var textActions = canvas.textActions = function() {
       selblock = document.createElementNS(svgns, "path");
       assignAttributes(selblock, {
         'id': "text_selectblock",
-        'fill': "green",
-        'opacity': .5,
+        'fill': "#3D7EC6",
+        'opacity': .3,
         'style': "pointer-events:none"
       });
       getElem("selectorParentGroup").appendChild(selblock);
@@ -3848,7 +3854,7 @@ var textActions = canvas.textActions = function() {
   
   function selectAll(evt) {
     setSelection(0, curtext.textContent.length);
-    $(this).unbind(evt);
+    if (evt) $(this).unbind(evt);
   }
 
   function selectWord(evt) {
@@ -3920,6 +3926,8 @@ var textActions = canvas.textActions = function() {
 
     },
     setCursor: setCursor,
+    selectAllText: selectAll,
+    getSelectedText: function(){return cursel;},
     toEditMode: function(x, y) {
       selectOnly([curtext], false)
       allow_dbl = false;
@@ -3947,6 +3955,7 @@ var textActions = canvas.textActions = function() {
     toSelectMode: function(selectElem) {
       current_mode = "select";
       clearInterval(blinker);
+      cursel = null;
       blinker = null;
       if(selblock) $(selblock).attr('display','none');
       if(cursor) $(cursor).attr('visibility','hidden');
