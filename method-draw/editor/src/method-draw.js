@@ -49,7 +49,8 @@
       showRulers: false,
       show_outside_canvas: false,
       no_save_warning: false,
-      initFont: 'Helvetica, Arial, sans-serif'
+      initFont: 'Helvetica, Arial, sans-serif',
+      selectionAlgorithm: svgedit.math.rectContains // or: svgedit.math.rectsIntersect
     },
       uiStrings = Editor.uiStrings = {
         common: {

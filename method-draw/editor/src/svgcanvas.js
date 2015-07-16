@@ -611,34 +611,28 @@ var getIntersectionList = this.getIntersectionList = function(rect) {
     curBBoxes = getVisibleElementsAndBBoxes(parent);
   }
   
-  var resultList = null;
-  try {
-    resultList = parent.getIntersectionList(rect, null);
-  } catch(e) { }
-
-  if (resultList == null || typeof(resultList.item) != "function") {
-    resultList = [];
+  var resultList = [];
+  
+  if(!rect) {
+    var rubberBBox = rubberBox.getBBox();
+    var bb = {};
     
-    if(!rect) {
-      var rubberBBox = rubberBox.getBBox();
-      var bb = {};
-      
-      for(var o in rubberBBox) {
-        bb[o] = rubberBBox[o] / current_zoom;
-      }
-      rubberBBox = bb;
-      
-    } else {
-      var rubberBBox = rect;
+    for(var o in rubberBBox) {
+      bb[o] = rubberBBox[o] / current_zoom;
     }
-    var i = curBBoxes.length;
-    while (i--) {
-      if(!rubberBBox.width || !rubberBBox.width) continue;
-      if (svgedit.math.rectsIntersect(rubberBBox, curBBoxes[i].bbox))  {
-        resultList.push(curBBoxes[i].elem);
-      }
+    rubberBBox = bb;
+    
+  } else {
+    var rubberBBox = rect;
+  }
+  var i = curBBoxes.length;
+  while (i--) {
+    if(!rubberBBox.width || !rubberBBox.width) continue;
+    if (curConfig.selectionAlgorithm(rubberBBox, curBBoxes[i].bbox))  {
+      resultList.push(curBBoxes[i].elem);
     }
   }
+
   // addToSelection expects an array, but it's ok to pass a NodeList 
   // because using square-bracket notation is allowed: 
   // http://www.w3.org/TR/DOM-Level-2-Core/ecma-script-binding.html

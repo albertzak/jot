@@ -244,4 +244,57 @@ svgedit.math.rectsIntersect = function(r1, r2) {
 };
 
 
+// Function: rectContains
+// Check if rectangle 1 (BBox) fully contains rectangle 2
+//
+// Paramaters:
+// r1 - The first BBox-like object
+// r2 - The second BBox-like object
+//
+// Returns:
+// Boolean that's true if rectangle 1 fully contains rectangle 2
+svgedit.math.rectContains = function(r1, r2) {
+  var x = r1.x,
+    y = r1.y,
+    w = r1.width,
+    h = r1.height;
+
+  var X = r2.x,
+    Y = r2.y,
+    W = r2.width,
+    H = r2.height;
+  
+  if ((w | h | W | H) < 0) {
+      // At least one of the dimensions is negative...
+      return false;
+  }
+  // Note: if any dimension is zero, tests below must return false...
+  if (X < x || Y < y) {
+      return false;
+  }
+  w += x;
+  W += X;
+  if (W <= X) {
+      // X+W overflowed or W was zero, return false if...
+      // either original w or W was zero or
+      // x+w did not overflow or
+      // the overflowed x+w is smaller than the overflowed X+W
+      if (w >= x || W > w) return false;
+  } else {
+      // X+W did not overflow and W was not zero, return false if...
+      // original w was zero or
+      // x+w did not overflow and x+w is smaller than X+W
+      if (w >= x && W > w) return false;
+  }
+  h += y;
+  H += Y;
+  if (H <= Y) {
+      if (h >= y || H > h) return false;
+  } else {
+      if (h >= y && H > h) return false;
+  }
+  return true;
+};
+
+
 })();
