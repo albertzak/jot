@@ -210,6 +210,9 @@ var current_zoom = 1;
 // pointer to current group (for in-group editing)
 var current_group = null;
 
+// Auto-grouping selection
+var temporaryGroup = null;
+
 // Object containing data for the currently selected styles
 var all_properties = {
   shape: {
@@ -2150,6 +2153,12 @@ var root_sctm = null;
 // noCall - Optional boolean that when true does not call the "selected" handler
 var clearSelection = this.clearSelection = function(noCall) {
   if (selectedElements[0] != null) {
+
+    if (temporaryGroup) {
+      canvas.ungroupSelectedElement();
+      temporaryGroup = null;
+    }
+
     var len = selectedElements.length;
     for (var i = 0; i < len; ++i) {
       var elem = selectedElements[i];
@@ -3252,6 +3261,13 @@ var getMouseTarget = this.getMouseTarget = function(evt) {
           rubberBox.setAttribute("display", "none");
           curBBoxes = [];
         }
+
+        // Auto-group selected elements temporarily
+        if (curConfig.groupSelectedElements && selectedElements[0] != null && selectedElements.length > 1) {
+          canvas.groupSelectedElements();
+          temporaryGroup = selectedElements[0];
+        }
+
         current_mode = "select";
       case "select":
         if (selectedElements[0] != null) {
@@ -8560,7 +8576,7 @@ this.ungroupSelectedElement = function() {
     }
 
     // remove the group from the selection      
-    clearSelection();
+    if (!temporaryGroup) clearSelection();
     
     // delete the group element (but make undo-able)
     var gNextSibling = g.nextSibling;
@@ -8570,7 +8586,7 @@ this.ungroupSelectedElement = function() {
     if (!batchCmd.isEmpty()) addCommandToHistory(batchCmd);
     
     // update selection
-    addToSelection(children);
+    if (!temporaryGroup) addToSelection(children);
   }
 };
 

@@ -50,7 +50,8 @@
       show_outside_canvas: false,
       no_save_warning: false,
       initFont: 'Helvetica, Arial, sans-serif',
-      selectionAlgorithm: svgedit.math.rectContains // or: svgedit.math.rectsIntersect
+      selectionAlgorithm: svgedit.math.rectContains, // or: svgedit.math.rectsIntersect
+      groupSelectedElements: true
     },
       uiStrings = Editor.uiStrings = {
         common: {
@@ -2496,6 +2497,18 @@
           svgCanvas.ungroupSelectedElement();
         }
       };
+
+      var clickForceGroup = function() {
+        if (multiselected) {
+          svgCanvas.groupSelectedElements();
+        }
+      };
+
+      var clickForceUngroup = function() {
+        if(selectedElement){
+          svgCanvas.ungroupSelectedElement();
+        }
+      };
       
       var clickClone = function(){
         svgCanvas.cloneSelectedElements(0, 57);
@@ -3698,6 +3711,19 @@
                 accelerator: 'CommandOrControl+A',
                 selector: 'selectAll:',
                 click: clickSelectAll
+              },
+              {
+                type: 'separator'
+              },
+              {
+                label: 'Group',
+                accelerator: 'CommandOrControl+G',
+                click: clickForceGroup
+              },
+              {
+                label: 'Ungroup',
+                accelerator: 'CommandOrControl+Shift+G',
+                click: clickForceUngroup
               }
             ]
           },
