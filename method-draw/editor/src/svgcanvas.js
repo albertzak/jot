@@ -5417,6 +5417,16 @@ this.svgCanvasToString = function() {
   while (removeUnusedDefElems() > 0) {};
   
   pathActions.clear(true);
+
+  // Temporarily move grid definition under svgcontent to export grid
+  if (curConfig.exportGrid) {
+    if (! $('#svgcontent>defs').length > 0) {
+      $($.parseXML('<defs></defs>').documentElement).prependTo($(svgcontent));
+    }
+
+    var p = $('#svgroot>defs>#gridpattern').remove();
+    $('#svgcontent>defs').append(p);
+  }
   
   // Keep SVG-Edit comment on top
   $.each(svgcontent.childNodes, function(i, node) {
@@ -5424,15 +5434,12 @@ this.svgCanvasToString = function() {
       svgcontent.insertBefore(node, svgcontent.firstChild);
     }
   });
-  
+
   // Move out of in-group editing mode
   if(current_group) {
     leaveContext();
     selectOnly([current_group]);
   }
-  
-  //hide grid, otherwise shows a black canvas
-  // $('#canvasGrid').attr('display', 'none');
   
   var naked_svgs = [];
   
@@ -5452,8 +5459,16 @@ this.svgCanvasToString = function() {
       $(this).replaceWith(svg);
     }
   });
+
   var output = this.svgToString(svgcontent, 0);
   
+  // Move grid def back to root
+  if (curConfig.exportGrid) {
+    p = $('#svgcontent>defs>#gridpattern').remove();
+    $('#svgroot>defs').append(p);
+  }
+
+
   // Rewrap gsvg
   if(naked_svgs.length) {
     $(naked_svgs).each(function() {

@@ -27,6 +27,7 @@
 
     var remote = require('remote');
     var clipboard = remote.require('clipboard');
+    var ipc = require('ipc');
 
     var curConfig = {
       canvas_expansion: 1, 
@@ -44,6 +45,7 @@
       showGrid: true,
       gridSnapping: false,
       gridColor: "#46A3FC",
+      exportGrid: true,
       baseUnit: 'px',
       snappingStep: 10,
       showRulers: false,
@@ -1802,17 +1804,7 @@
           }
         }
       }).bind('contextmenu', function(e) {e.preventDefault()});
-    
-      $("#toggle_stroke_tools").toggle(function() {
-        $(".stroke_tool").css('display','table-cell');
-        $(this).addClass('expanded');
-        resetScrollPos();
-      }, function() {
-        $(".stroke_tool").css('display','none');
-        $(this).removeClass('expanded');
-        resetScrollPos();
-      });
-    
+        
       // This is a common function used when a tool has been clicked (chosen)
       // It does several common things:
       // - removes the tool_button_current class from whatever tool currently has it
@@ -3641,7 +3633,18 @@
               {
                 label: 'Save As',
                 accelerator: 'CommandOrControl+Shift+S',
-                enabled: false
+                click: function() {
+                  ipc.send('save-as', { 
+                    data: svgCanvas.getSvgString(),
+                    options: {
+                      title: 'Save As',
+                      defaultPath: '~/Documents/jotpad.svg',
+                      filters: [
+                        { name: 'Scalable Vector Graphics', extensions: ['svg']}
+                      ]
+                    }
+                  });
+                }
               },
               {
                 type: 'separator'
