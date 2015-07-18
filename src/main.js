@@ -49,6 +49,12 @@ app.on('ready', function() {
     });
   });
 
+  ipc.on('open', function(e, args) {
+    var filePath = dialog.showOpenDialog(mainWindow, args.options);
+    if (filePath && filePath[0])
+      e.returnValue = fs.readFileSync(filePath[0], { encoding: 'utf-8'});
+  });
+
 
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows

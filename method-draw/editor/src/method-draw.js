@@ -3608,7 +3608,20 @@
               {
                 label: 'Open',
                 accelerator: 'CommandOrControl+O',
-                enabled: false
+                click: function() {
+                  var source = ipc.sendSync('open', { 
+                    options: {
+                      title: 'Open',
+                      defaultPath: '~/Documents/jotpad.svg',
+                      filters: [
+                        { name: 'Scalable Vector Graphics', extensions: ['svg']}
+                      ],
+                      properties: ['openFile']
+                    }
+                  });
+
+                  Editor.loadFromString(source);
+                }
               },
               {
                 label: 'Recent Documents',
@@ -3634,7 +3647,7 @@
                 label: 'Save As',
                 accelerator: 'CommandOrControl+Shift+S',
                 click: function() {
-                  ipc.send('save-as', { 
+                  ipc.sendSync('save-as', { 
                     data: svgCanvas.getSvgString(),
                     options: {
                       title: 'Save As',

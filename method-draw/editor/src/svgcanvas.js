@@ -5390,7 +5390,7 @@ var removeUnusedDefElems = this.removeUnusedDefElems = function() {
     }
   };
   
-  var defelems = $(defs).find("linearGradient, radialGradient, filter, marker, svg, symbol");
+  var defelems = $(defs).find("linearGradient, radialGradient, filter, marker, svg, symbol"),
     defelem_ids = [],
     i = defelems.length;
   while (i--) {
@@ -5407,6 +5407,30 @@ var removeUnusedDefElems = this.removeUnusedDefElems = function() {
   return numRemoved;
 }
 
+this.gridManager = function() {
+  return {
+    moveFromRootToContent: function() {
+      if (curConfig.exportGrid) {
+        if (! $('#svgcontent>defs').length > 0) {
+          $($.parseXML('<defs></defs>').documentElement).prependTo($(svgcontent));
+        }
+
+        var p = $('#svgroot>defs>#gridpattern').remove();
+        $('#svgcontent>defs').append(p);
+      }
+    },
+
+    moveFromContentToRoot: function() {
+      if (curConfig.exportGrid) {
+        var p = $('#svgcontent>defs>#gridpattern').remove();
+
+        $('#svgroot>defs>#gridpattern').remove();
+        $('#svgroot>defs').append(p);
+      }
+    },
+  }
+}
+
 // Function: svgCanvasToString
 // Main function to set up the SVG content for output 
 //
@@ -5419,14 +5443,8 @@ this.svgCanvasToString = function() {
   pathActions.clear(true);
 
   // Temporarily move grid definition under svgcontent to export grid
-  if (curConfig.exportGrid) {
-    if (! $('#svgcontent>defs').length > 0) {
-      $($.parseXML('<defs></defs>').documentElement).prependTo($(svgcontent));
-    }
-
-    var p = $('#svgroot>defs>#gridpattern').remove();
-    $('#svgcontent>defs').append(p);
-  }
+  var gridManager = this.gridManager();
+  gridManager.moveFromRootToContent();
   
   // Keep SVG-Edit comment on top
   $.each(svgcontent.childNodes, function(i, node) {
@@ -5461,13 +5479,9 @@ this.svgCanvasToString = function() {
   });
 
   var output = this.svgToString(svgcontent, 0);
-  
-  // Move grid def back to root
-  if (curConfig.exportGrid) {
-    p = $('#svgcontent>defs>#gridpattern').remove();
-    $('#svgroot>defs').append(p);
-  }
 
+  // Move grid def back to root
+  gridManager.moveFromRootToContent();
 
   // Rewrap gsvg
   if(naked_svgs.length) {
@@ -6235,9 +6249,10 @@ this.setSvgString = function(xmlString) {
     this.contentW = attrs['width'];
     this.contentH = attrs['height'];
     
-    $("#canvas_width").val(this.contentW)
-    $("#canvas_height").val(this.contentH)
-    var background = $("#canvas_background")
+    $("#canvas_width").val(this.contentW);
+    $("#canvas_height").val(this.contentH);
+    var background = $("#canvas_background");
+    var fill = null;
     if (background.length) {
       var opacity = background.attr("fill-opacity")
       opacity = opacity ? parseInt(opacity)*100 : 100
@@ -6253,7 +6268,11 @@ this.setSvgString = function(xmlString) {
     // update root to the correct size
     var changes = content.attr(["width", "height"]);
     batchCmd.addSubCommand(new ChangeElementCommand(svgroot, changes));
-    
+
+    // Replace grid
+    var gridManager = this.gridManager();
+    gridManager.moveFromContentToRoot();
+
     // reset zoom
     current_zoom = 1;
     
