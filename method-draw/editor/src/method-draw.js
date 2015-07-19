@@ -3969,7 +3969,12 @@
               {
                 label: 'Insert Image',
                 accelerator: 'CommandOrControl+Shift+I',
-                enabled: false
+                click: function() {
+                  var data = ipc.sendSync('import', {options: {
+                    title: 'Insert Image'
+                  }});
+                  import_image(null, data);
+                }
               },
               {
                 label: 'Pick Color',
@@ -4204,14 +4209,42 @@
             
       if (window.FileReader) {
         
-        var import_image = function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-          $("#workarea").removeAttr("style");
-          $('#main_menu').hide();
+        var import_image = function(e, data) {
+          if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+          }
+
           var file = null;
-          if (e.type == "drop") file = e.dataTransfer.files[0]
-          else file = this.files[0];
+          if (e && e.type == "drop") 
+            file = e.dataTransfer.files[0]
+          else if (this && this.files && this.files[0])
+            file = this.files[0];
+          else {
+            var base64toBlob = function(base64Data, contentType) {
+              contentType = contentType || '';
+              var sliceSize = 1024;
+              var byteCharacters = atob(base64Data);
+              var bytesLength = byteCharacters.length;
+              var slicesCount = Math.ceil(bytesLength / sliceSize);
+              var byteArrays = new Array(slicesCount);
+
+              for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+                var begin = sliceIndex * sliceSize;
+                var end = Math.min(begin + sliceSize, bytesLength);
+
+                var bytes = new Array(end - begin);
+                for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
+                  bytes[i] = byteCharacters[offset].charCodeAt(0);
+                }
+                byteArrays[sliceIndex] = new Uint8Array(bytes);
+              }
+              return new Blob(byteArrays, { type: contentType });
+            }
+
+            file = base64toBlob(data.data, data.type);
+          }
+
           if (file) {
             if(file.type.indexOf("image") != -1) {
               //detected an image
@@ -4227,6 +4260,7 @@
                   svgCanvas.alignSelectedElements("m", "page")
                   svgCanvas.alignSelectedElements("c", "page")
                 };
+
                 reader.readAsText(file);
               }
           
@@ -4235,7 +4269,7 @@
                 var reader = new FileReader();
                 reader.onloadend = function(e) {
                   // lets insert the new image until we know its dimensions
-                  insertNewImage = function(img_width, img_height){
+                  var insertNewImage = function(img_width, img_height){
                       var newImage = svgCanvas.addSvgElementFromJson({
                       "element": "image",
                       "attr": {
@@ -4256,13 +4290,37 @@
                   // put a placeholder img so we know the default dimensions
                   var img_width = 100;
                   var img_height = 100;
-                  var img = new Image()
-                  img.src = e.target.result
+                  var img = new Image();
+                  img.src = e.target.result;
                   document.body.appendChild(img);
                   img.onload = function() {
                     img_width = img.offsetWidth
                     img_height = img.offsetHeight
-                    insertNewImage(img_width, img_height);
+
+                    var max_width = curConfig.dimensions[0];
+                    var max_height = curConfig.dimensions[1];
+
+                    var width = img_width;
+                    var height = img_height;
+                    var ratio = 0;
+
+                    if(img_width > max_width){
+                        ratio = max_width / img_width;
+                        width = max_width;
+                        height = img_height * ratio;
+                        img_height = img_height * ratio;
+                        img_width = img_width * ratio;
+                    }
+
+                    if(img_height > max_height){
+                        ratio = max_height / img_height;
+                        height = max_height;
+                        width = img_width * ratio;
+                        img_width = img_width * ratio;
+                        height = img_height * ratio;
+                    }
+
+                    insertNewImage(width, height);
                     document.body.removeChild(img);
                   }
                 };
@@ -4277,14 +4335,6 @@
         function onDragEnter(e) {
           e.stopPropagation();
           e.preventDefault();
-          workarea.css({
-            "-webkit-transform": "scale3d(1.1,1.1,1)",
-            "-moz-transform": "scale3d(1.1,1.1,1)",
-            "-o-transform": "scale(1.1)",
-            "-ms-transform": "scale3d(1.1,1.1,1)",
-            "transform": "scale3d(1.1,1.1,1)"
-          })
-
         }
 
         function onDragOver(e) {
@@ -4293,12 +4343,11 @@
         }
 
         function onDragLeave(e) {
-          workarea.removeAttr("style")
           e.stopPropagation();
           e.preventDefault();
         }
 
-      workarea[0].addEventListener('dragenter', onDragEnter, false);
+        workarea[0].addEventListener('dragenter', onDragEnter, false);
         workarea[0].addEventListener('dragover', onDragOver, false);
         workarea[0].addEventListener('dragleave', onDragLeave, false);
         workarea[0].addEventListener('drop', import_image, false);

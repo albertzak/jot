@@ -1,8 +1,12 @@
+"use strict";
+
 var app           = require('app');
 var BrowserWindow = require('browser-window');
 var ipc           = require('ipc');
 var dialog        = require('dialog');
 var fs            = require('fs');
+var blob          = require('blob');
+var mime          = require('mime');
 
 require('crash-reporter').start();
 
@@ -53,6 +57,19 @@ app.on('ready', function() {
     var filePath = dialog.showOpenDialog(mainWindow, args.options);
     if (filePath && filePath[0])
       e.returnValue = fs.readFileSync(filePath[0], { encoding: 'utf-8'});
+  });
+
+  ipc.on('import', function(e, args) {
+    var filePath = dialog.showOpenDialog(mainWindow, args.options);
+    if (filePath && filePath[0]) {
+      fs.readFile(filePath[0], function(err, data){
+        var type = mime.lookup(filePath[0]);
+        if (type.indexOf('svg') != -1)
+          e.returnValue = {data: data, type: type};
+        else
+          e.returnValue = {data: data.toString('base64'), type: type};
+      });
+    }
   });
 
 
