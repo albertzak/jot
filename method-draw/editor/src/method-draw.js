@@ -2260,7 +2260,7 @@
       
       var pasteSelected = function() {
         var currentMode = svgCanvas.getMode();
-        if (currentMode === 'text' || currentMode === 'textedit') {
+        if ((currentMode === 'text' || currentMode === 'textedit') && clipboard.readText()) {
           var pastedString = clipboard.readText();
           var textEl, cursorPos, result;
           if (pastedString) {
@@ -2269,6 +2269,11 @@
             result = textEl.val().splice(cursorPos, 0, pastedString);
             textEl.val(result);
           }
+        } else if( ! clipboard.readImage().isEmpty()) {
+          var data = clipboard.readImage().toDataUrl();
+          var type = data.substr(5, data.indexOf(';') - 5);
+          data = data.substr(data.indexOf(',') + 1);
+          import_image(null, {data: data, type: type});
         } else {
           var zoom = svgCanvas.getZoom();
           var x = (workarea[0].scrollLeft + workarea.width()/2)/zoom  - svgCanvas.contentW;
