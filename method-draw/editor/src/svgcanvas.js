@@ -8909,8 +8909,8 @@ this.cloneSelectedElements = function(x,y, drag) {
     var parent = (current_group || getCurrentDrawing().getCurrentLayer())
     if (drag) {
       //removed the dragged transform until that moment
-      tlist = getTransformList(clone)
-          tlist.removeItem(drag)
+      var tlist = getTransformList(clone);
+      tlist.removeItem(drag)
       recalculateDimensions(clone)
       parent.insertBefore(clone, elem);
     }
