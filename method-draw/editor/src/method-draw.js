@@ -3673,9 +3673,20 @@
                 enabled: false
               },
               {
-                label: 'Export as PDF',
+                label: 'Export to PDF',
                 accelerator: 'CommandOrControl+Shift+P',
-                enabled: false
+                click: function() {
+                  ipc.sendSync('export-pdf', {
+                    data: svgCanvas.getSvgString(),
+                    options: {
+                      title: 'Export to PDF',
+                      defaultPath: '~/Documents/jotpad.pdf',
+                      filters: [
+                        { name: 'Portable Document Format', extensions: ['pdf']}
+                      ]
+                    }
+                  });
+                }
               }
             ]
           },

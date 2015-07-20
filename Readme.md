@@ -1,5 +1,22 @@
 # Jotpad
 
+## Dependencies
+
+### LibRSVG
+
+Ubuntu
+
+    sudo apt-get install librsvg2-dev
+
+RedHat / OpenSUSE
+
+    sudo yum install librsvg2-devel
+
+Mac OS X
+
+    brew install librsvg
+
+
 ## Contributors
 
 License: MIT

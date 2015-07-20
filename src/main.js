@@ -5,10 +5,12 @@ var BrowserWindow = require('browser-window');
 var ipc           = require('ipc');
 var dialog        = require('dialog');
 var fs            = require('fs');
-var blob          = require('blob');
 var mime          = require('mime');
+var temp          = require('temp');
+var execSync      = require('child_process').execSync;
 
 require('crash-reporter').start();
+temp.track();
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
@@ -70,6 +72,19 @@ app.on('ready', function() {
           e.returnValue = {data: data.toString('base64'), type: type};
       });
     }
+  });
+
+  ipc.on('export-pdf', function(e, args) {
+    var outputFilePath = dialog.showSaveDialog(mainWindow, args.options);
+    if (!outputFilePath) return;
+
+    temp.open('jot', function(err, f) {
+      fs.write(f.fd, args.data);
+      fs.close(f.fd, function(err) {
+        var svgFilePaths = [f.path];
+        execSync('rsvg-convert -f pdf -o ' + outputFilePath + ' ' + svgFilePaths.join(' '));
+      });
+    });
   });
 
 
