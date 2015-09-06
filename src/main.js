@@ -17,7 +17,7 @@ temp.track();
 var mainWindow = null;
 
 app.on('window-all-closed', function() {
-  // On OSX it is common for applications and their menu bar 
+  // On OSX it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform != 'darwin') {
     app.quit();
@@ -28,10 +28,10 @@ app.on('ready', function() {
   var electronScreen = require('screen');
   var display = electronScreen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
-    x: display.x + 50,
-    y: display.y + 50,
-    width: display.width - 100,
-    height: display.height - 100,
+    x: display.x,
+    y: display.y,
+    width: display.width,
+    height: display.height,
     'min-width': 560,
     'min-height': 426,
     'disable-auto-hide-cursor': true,
@@ -43,6 +43,8 @@ app.on('ready', function() {
       'overlay-scrollbars': false
     }
   });
+
+  mainWindow.maximize();
 
   mainWindow.loadUrl('file://' + __dirname + '/../method-draw/editor/index.html');
 

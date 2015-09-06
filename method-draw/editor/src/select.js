@@ -27,7 +27,7 @@ var selectorManager_; // A Singleton
 
 // Class: svgedit.select.Selector
 // Private class for DOM element selection boxes
-// 
+//
 // Parameters:
 // id - integer to internally indentify the selector
 // elem - DOM element associated with this selector
@@ -61,7 +61,7 @@ svgedit.select.Selector = function(id, elem) {
 			}
 		})
 	);
-	
+
 	if (svgedit.browser.isTouch()) {
 	  this.selectorRect.setAttribute("stroke-opacity", 0.3);
 	}
@@ -82,10 +82,10 @@ svgedit.select.Selector = function(id, elem) {
 };
 
 
-// Function: svgedit.select.Selector.reset 
+// Function: svgedit.select.Selector.reset
 // Used to reset the id and element that the selector is attached to
 //
-// Parameters: 
+// Parameters:
 // e - DOM element associated with this selector
 svgedit.select.Selector.prototype.reset = function(e) {
 	this.locked = true;
@@ -165,7 +165,7 @@ svgedit.select.Selector.prototype.resize = function() {
 	var bbox = svgedit.utilities.getBBox(selected);
 	if(tagName === 'g' && !$.data(selected, 'gsvg')) {
 		// The bbox for a group does not include stroke vals, so we
-		// get the bbox based on its children. 
+		// get the bbox based on its children.
 		var stroked_bbox = svgFactory_.getStrokedBBox(selected.childNodes);
 		if(stroked_bbox) {
 			bbox = stroked_bbox;
@@ -178,17 +178,17 @@ svgedit.select.Selector.prototype.resize = function() {
 
 	// we need to handle temporary transforms too
 	// if skewed, get its transformed box, then find its axis-aligned bbox
-	
+
 	//*
 	offset *= current_zoom;
-	
+
 	var nbox = svgedit.math.transformBox(l*current_zoom, t*current_zoom, w*current_zoom, h*current_zoom, m),
 		aabox = nbox.aabox,
 		nbax = aabox.x - offset,
 		nbay = aabox.y - offset,
 		nbaw = aabox.width + (offset * 2),
 		nbah = aabox.height + (offset * 2);
-		
+
 	// now if the shape is rotated, un-rotate it
 	var cx = nbax + nbaw/2,
 		cy = nbay + nbah/2;
@@ -222,14 +222,14 @@ svgedit.select.Selector.prototype.resize = function() {
 		nbaw = (maxx-minx);
 		nbah = (maxy-miny);
 	}
-	var sr_handle = svgFactory_.svgRoot().suspendRedraw(100);
+	// var sr_handle = svgFactory_.svgRoot().suspendRedraw(100);
 
 	var dstr = 'M' + nbax + ',' + nbay
 				+ ' L' + (nbax+nbaw) + ',' + nbay
 				+ ' ' + (nbax+nbaw) + ',' + (nbay+nbah)
 				+ ' ' + nbax + ',' + (nbay+nbah) + 'z';
 	selectedBox.setAttribute('d', dstr);
-	
+
 	var xform = angle ? 'rotate(' + [angle,cx,cy].join(',') + ')' : '';
 	this.selectorGroup.setAttribute('transform', xform);
 
@@ -257,21 +257,21 @@ svgedit.select.Selector.prototype.resize = function() {
 			selectedGrips[dir].setAttribute('x', coords[0]);
 			selectedGrips[dir].setAttribute('y', coords[1]);
 		};
-		
+
 		this.rotateCoords = {
 			'nw': [nbax, nbay],
 			'ne': [nbax+nbaw+8, nbay],
 			'sw': [nbax, nbay+nbah+8],
 			'se': [nbax+nbaw+8, nbay+nbah+8]
 		};
-		
+
     for(var dir in this.rotateCoords) {
       var coords = this.rotateCoords[dir];
-		  mgr.rotateGrips[dir].setAttribute('cx', coords[0]); 
+		  mgr.rotateGrips[dir].setAttribute('cx', coords[0]);
 		  mgr.rotateGrips[dir].setAttribute('cy', coords[1]);
 	  }
 
-	svgFactory_.svgRoot().unsuspendRedraw(sr_handle);
+	// svgFactory_.svgRoot().unsuspendRedraw(sr_handle);
 };
 
 
@@ -372,12 +372,12 @@ svgedit.select.SelectorManager.prototype.initGroup = function() {
 			}
 		});
 		if (svgedit.browser.isTouch()) {
-		  
+
 		  grip.setAttribute("width", 30.5)
 		  grip.setAttribute("height", 30.5)
 		  grip.setAttribute("fill-opacity", 0.3)
 		}
-		
+
 		$.data(grip, 'dir', dir);
 		$.data(grip, 'type', 'resize');
 		this.selectorGrips[dir] = this.selectorGripsGroup.appendChild(grip);
@@ -405,7 +405,7 @@ svgedit.select.SelectorManager.prototype.initGroup = function() {
       'id': 'placeholder_defs'
     }
   })
-  
+
   var pattern = svgFactory_.createSVGElement({
     'element': 'pattern',
     'attr': {
@@ -418,7 +418,7 @@ svgedit.select.SelectorManager.prototype.initGroup = function() {
       'viewBox': '0 0 10 10'
     }
   })
-  
+
   var pattern_bg = svgFactory_.createSVGElement({
     'element': 'rect',
     'attr': {
@@ -440,7 +440,7 @@ svgedit.select.SelectorManager.prototype.initGroup = function() {
       'fill': "#eee"
     }
   })
-  
+
   var pattern_square2 = svgFactory_.createSVGElement({
     'element': 'rect',
     'attr': {
@@ -508,7 +508,7 @@ svgedit.select.SelectorManager.prototype.requestSelector = function(elem) {
 };
 
 // Function: svgedit.select.SelectorManager.releaseSelector
-// Removes the selector of the given element (hides selection box) 
+// Removes the selector of the given element (hides selection box)
 //
 // Parameters:
 // elem - DOM element to remove the selector for
@@ -549,7 +549,7 @@ svgedit.select.SelectorManager.prototype.getRubberBandBox = function() {
 					'fill': 'none',
 					'stroke': '#666',
 					'stroke-width': 1,
-					'stroke-dasharray': '3,2', 
+					'stroke-dasharray': '3,2',
 					'display': 'none',
 					'style': 'pointer-events:none'
 				}
