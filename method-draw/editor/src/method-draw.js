@@ -2655,14 +2655,18 @@
 
       var insertPageAtEnd = function() {
         var height = $('#canvas_height');
-        height.val(parseInt(height.val()) + parseInt(curConfig.pageDimension[1]));
+        height.val(parseInt(height.val()) + curConfig.pageDimension[1]);
         changeCanvasSize();
       };
 
       var deletePageAtEnd = function() {
         var height = $('#canvas_height');
-        height.val(parseInt(height.val()) - parseInt(curConfig.pageDimension[1]));
-        changeCanvasSize();
+
+        var curHeight = parseInt(height.val());
+        if (curHeight - curConfig.pageDimension[1] >= curConfig.pageDimension[1]) {
+          height.val(curHeight - curConfig.pageDimension[1]);
+          changeCanvasSize();
+        }
       };
 
 
