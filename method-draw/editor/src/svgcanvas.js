@@ -1928,11 +1928,11 @@ var recalculateDimensions = this.recalculateDimensions = function(selected) {
 
           // Convert stroke
           // TODO: Find out if this should actually happen somewhere else
-          var sw = child.getAttribute("stroke-width");
-          if (child.getAttribute("stroke") !== "none" && !isNaN(sw)) {
-            var avg = (Math.abs(em.a) + Math.abs(em.d)) / 2;
-            child.setAttribute('stroke-width', sw * avg);
-          }
+          // var sw = child.getAttribute("stroke-width");
+          // if (child.getAttribute("stroke") !== "none" && !isNaN(sw)) {
+          //   var avg = (Math.abs(em.a) + Math.abs(em.d)) / 2;
+          //   child.setAttribute('stroke-width', sw * avg);
+          // }
 
         }
       }

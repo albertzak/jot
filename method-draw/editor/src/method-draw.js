@@ -34,7 +34,7 @@
       pageDimension: [794, 1121], // A4 at 96 DPI
       dimensions: [794, 1121 * 2],
       initFill: {color: '000', opacity: 1},
-      initStroke: {width: 1.5, color: '000', opacity: 1},
+      initStroke: {width: 2.5, color: '000', opacity: 1},
       initOpacity: 1,
       imgPath: 'images/',
       extPath: 'extensions/',
@@ -202,6 +202,12 @@
 
       $("#canvas_width").val(curConfig.dimensions[0]);
       $("#canvas_height").val(curConfig.dimensions[1]);
+      Editor.ready(function() {
+        changeZoom({value: 150});
+        setTimeout(function() {
+          $('#workarea').scrollTop(0);
+        }, 450);
+      });
 
       var extFunc = function() {
         $.each(curConfig.extensions, function() {
@@ -338,31 +344,29 @@
       Editor.canvas = svgCanvas = new $.SvgCanvas(document.getElementById("svgcanvas"), curConfig);
       Editor.show_save_warning = false;
       Editor.paintBox = {fill: null, stroke:null, canvas:null};
-      var palette = ["#444444", "#482816", "#422C10", "#3B2F0E", "#32320F",
-                     "#293414", "#1F361B", "#153723", "#0C372C",
-                     "#083734", "#0E353B", "#1A333F", "#273141",
-                     "#332D40", "#3E2A3C", "#462735", "#4B252D",
-                     "#4D2425", "#4C261D", "#666666", "#845335", "#7B572D",
-                     "#6F5C2A", "#62612C", "#546433", "#46673D",
-                     "#396849", "#306856", "#2D6862", "#33666C",
-                     "#426373", "#535F75", "#645A73", "#74556D",
-                     "#805064", "#884D58", "#8B4D4B", "#894F3F",
-                     "#999999", "#C48157", "#B8874D", "#A98E49", "#97944B",
-                     "#849854", "#729C62", "#619E73", "#559E84",
-                     "#529D94", "#5B9BA2", "#6D97AB", "#8391AE",
-                     "#9A8AAB", "#AF84A3", "#BF7E96", "#C97A86",
-                     "#CE7975", "#CC7C65", "#BBBBBB", "#FFB27C", "#FABA6F",
-                     "#E6C36A", "#CFCA6D", "#B8D078", "#A0D58A",
-                     "#8CD79F", "#7DD8B5", "#7AD6CA", "#84D3DB",
-                     "#9ACEE6", "#B6C7EA", "#D3BEE7", "#EDB6DC",
-                     "#FFAFCC", "#FFAAB8", "#FFA9A2", "#FFAC8D",
-                     "#DDDDDD", "#FFE7A2", "#FFF093", "#FFFA8D", "#FFFF91",
-                     "#EEFF9F", "#D1FFB4", "#B9FFCE", "#A8FFE9",
-                     "#A4FFFF", "#B1FFFF", "#CBFFFF", "#EDFFFF",
-                     "#FFF5FF", "#FFEBFF", "#FFE2FF", "#FFDCEC",
-                     "#FFDBD2", "#FFDFB8"
-                 ],
-        isMac = (navigator.platform.indexOf("Mac") >= 0),
+
+      var palette = [
+        '#525252',
+        '#8a8a8a',
+        '#c3c3c3',
+        '#f0d440',
+        '#ebb11d',
+        '#b55b29',
+        '#ad220a',
+        '#db6f6f',
+        '#ad0c68',
+        '#83266f',
+        '#cc1bd0',
+        '#360771',
+        '#164ba7',
+        '#5a64e4',
+        '#1ebfe9',
+        '#2e949a',
+        '#18aa5b',
+        '#7bbe40',
+      ];
+
+      var isMac = (navigator.platform.indexOf("Mac") >= 0),
         isWebkit = (navigator.userAgent.indexOf("AppleWebKit") >= 0),
         modKey = (isMac ? "meta+" : "ctrl+"), // ⌘
         path = svgCanvas.pathActions,
@@ -1651,9 +1655,7 @@
       svgCanvas.bind("extension_added", extAdded);
       svgCanvas.textActions.setInputElem($("#text")[0]);
 
-      var str = '<div class="palette_item transparent" data-rgb="none"></div>\
-                <div class="palette_item black" data-rgb="#000000"></div>\
-                <div class="palette_item white" data-rgb="#ffffff"></div>'
+      var str = '<div class="palette_item black" data-rgb="#000000"></div>';
       palette.forEach(function(item, i){
         str += '<div class="palette_item" style="background-color: ' + item + ';" data-rgb="' + item + '"></div>';
       });
@@ -1775,8 +1777,6 @@
 
         if (evt.type == "mousedown") picking = true;
         if (picking) {
-          var isStroke = $('#tool_stroke').hasClass('active');
-          var picker = isStroke ? "stroke" : "fill";
           var color = $(this).attr('data-rgb');
           var paint = null;
           var noUndo = true;
@@ -1790,18 +1790,17 @@
             paint = new $.jGraduate.Paint({alpha: 100, solidColor: color.substr(1)});
           }
 
-          Editor.paintBox[picker].setPaint(paint);
+          Editor.paintBox['stroke'].setPaint(paint);
+          Editor.paintBox['fill'].setPaint(paint);
 
-          if (isStroke) {
-            svgCanvas.setColor('stroke', color, noUndo);
-            if (color != 'none' && svgCanvas.getStrokeOpacity() != 1) {
-              svgCanvas.setPaintOpacity('stroke', 1.0);
-            }
-          } else {
-            svgCanvas.setColor('fill', color, noUndo);
-            if (color != 'none' && svgCanvas.getFillOpacity() != 1) {
-              svgCanvas.setPaintOpacity('fill', 1.0);
-            }
+          svgCanvas.setColor('stroke', color, noUndo);
+          if (color != 'none' && svgCanvas.getStrokeOpacity() != 1) {
+            svgCanvas.setPaintOpacity('stroke', 1.0);
+          }
+
+          svgCanvas.setColor('fill', color, noUndo);
+          if (color != 'none' && svgCanvas.getFillOpacity() != 1) {
+            svgCanvas.setPaintOpacity('fill', 1.0);
           }
         }
       }).bind('contextmenu', function(e) {e.preventDefault()});
@@ -2668,8 +2667,6 @@
           changeCanvasSize();
         }
       };
-
-
 
       function setBackground(color, url) {
 //        if(color == curPrefs.bkgd_color && url == curPrefs.bkgd_url) return;
@@ -4155,7 +4152,7 @@
       $('#group_opacity').dragInput({ min: 0,    max: 100,   step:  5,  callback: changeAttribute,       cursor: true,  start: 100             });
       $('#blur')         .dragInput({ min: 0,    max: 10,    step: .1,  callback: changeBlur,          cursor: true,  start: 0               });
         // Set default zoom
-      $('#zoom').val(svgCanvas.getZoom() * 100);
+      $('#zoom').val(svgCanvas.getZoom() * 150);
 
       $("#workarea").contextMenu({
           menu: 'cmenu_canvas',
