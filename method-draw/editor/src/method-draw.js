@@ -346,24 +346,14 @@
       Editor.paintBox = {fill: null, stroke:null, canvas:null};
 
       var palette = [
-        '#525252',
-        '#8a8a8a',
-        '#c3c3c3',
-        '#f0d440',
-        '#ebb11d',
-        '#b55b29',
-        '#ad220a',
-        '#db6f6f',
-        '#ad0c68',
-        '#83266f',
-        '#cc1bd0',
-        '#360771',
-        '#164ba7',
-        '#5a64e4',
-        '#1ebfe9',
-        '#2e949a',
-        '#18aa5b',
-        '#7bbe40',
+        '#c3c3c3', // gray
+        '#d22710', // red
+        '#934795', // pink
+        '#dba315', // yellow
+        '#164ba7', // blue
+        '#5a64e4', // violet
+        '#1ebfe9', // light blue
+        '#80d633', // green
       ];
 
       var isMac = (navigator.platform.indexOf("Mac") >= 0),
@@ -650,6 +640,8 @@
         }
 
         Editor.show_save_warning = true;
+
+        ipc.send('setDirty', true);
 
         // we update the contextual panel with potentially new
         // positional/sizing information (we DON'T want to update the
@@ -2623,11 +2615,11 @@
 
       var clickSave = function(){
         // In the future, more options can be provided here
-        var saveOpts = {
-          'images': curPrefs.img_save,
-          'round_digits': 6
-        }
-        svgCanvas.save(saveOpts);
+        // var saveOpts = {
+        //   'images': curPrefs.img_save,
+        //   'round_digits': 6
+        // }
+        // svgCanvas.save(saveOpts);
       };
 
       var saveSourceEditor = function(){
@@ -3339,7 +3331,7 @@
           {sel:'#tool_image', fn: clickImage, evt: 'mouseup'},
           {sel:'#tool_zoom', fn: clickZoom, evt: 'mouseup', key: ['Z', true]},
           {sel:'#tool_clear', fn: clickClear, evt: 'mouseup', key: [modKey + 'N', true]},
-          {sel:'#tool_save', fn: function() { editingsource?saveSourceEditor():clickSave()}, evt: 'mouseup', key: [modKey + 'S', true]},
+          // {sel:'#tool_save', fn: function() { editingsource?saveSourceEditor():clickSave()}, evt: 'mouseup', key: [modKey + 'S', true]},
           {sel:'#tool_export', fn: clickExport, evt: 'mouseup'},
           {sel:'#tool_open', fn: clickOpen, evt: 'mouseup'},
           {sel:'#tool_import', fn: clickImport, evt: 'mouseup'},
@@ -3663,21 +3655,18 @@
               {
                 label: 'Save',
                 accelerator: 'CommandOrControl+S',
-                enabled: false
+                click: function() {
+                  ipc.sendSync('save', {
+                    data: svgCanvas.getSvgString()
+                  });
+                }
               },
               {
                 label: 'Save As',
                 accelerator: 'CommandOrControl+Shift+S',
                 click: function() {
                   ipc.sendSync('save-as', {
-                    data: svgCanvas.getSvgString(),
-                    options: {
-                      title: 'Save As',
-                      defaultPath: '~/Documents/jotpad.svg',
-                      filters: [
-                        { name: 'Scalable Vector Graphics', extensions: ['svg']}
-                      ]
-                    }
+                    data: svgCanvas.getSvgString()
                   });
                 }
               },

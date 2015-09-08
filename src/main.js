@@ -48,19 +48,66 @@ app.on('ready', function() {
 
   mainWindow.loadUrl('file://' + __dirname + '/../method-draw/editor/index.html');
 
-  ipc.on('save-as', function(e, args) {
-    var filePath = dialog.showSaveDialog(mainWindow, args.options);
-    if (!filePath) return;
+  var Jot = {
+    setFile: function(path) {
+      mainWindow.setRepresentedFilename(path);
+      mainWindow.setTitle([path, 'Jot'].join(' - '));
+      return Jot.lastFile = path;
+    },
+    getFile: function() {
+      return mainWindow.getRepresentedFilename();
+    },
+    lastFile: '~/Documents/Untitled.svg',
+    setDirty: function(bool) {
+      mainWindow.setDocumentEdited(bool);
+    },
+    saveAs: function(args) {
+      var options = {
+        title: 'Save As',
+        defaultPath: Jot.lastFile,
+        filters: [
+          { name: 'Scalable Vector Graphics', extensions: ['svg']}
+        ]
+      };
 
-    fs.writeFile(filePath, args.data, function(err) {
-      if (err != null) dialog.showErrorBox("Couldn't save File", err);
-    });
+      var filePath = dialog.showSaveDialog(mainWindow, options);
+      if (!filePath) return;
+      Jot.setFile(filePath);
+      Jot.setDirty(false);
+      fs.writeFile(filePath, args.data, function(err) {
+        if (err != null) dialog.showErrorBox("Couldn't save File", err);
+      });
+    },
+    save: function(args) {
+      if (!Jot.getFile())
+        return Jot.saveAs(args);
+
+      Jot.setDirty(false);
+      fs.writeFile(Jot.getFile(), args.data, function(err) {
+        if (err != null) dialog.showErrorBox("Couldn't save File", err);
+      });
+    },
+  }
+
+  ipc.on('save-as', function(e, args) {
+    Jot.saveAs(args);
+  });
+
+  ipc.on('save', function(e, args) {
+    Jot.save(args);
+  });
+
+  ipc.on('setDirty', function(e, bool) {
+    Jot.setDirty(bool);
   });
 
   ipc.on('open', function(e, args) {
     var filePath = dialog.showOpenDialog(mainWindow, args.options);
-    if (filePath && filePath[0])
+    if (filePath && filePath[0]) {
       e.returnValue = fs.readFileSync(filePath[0], { encoding: 'utf-8'});
+      Jot.setFile(filePath);
+      Jot.setDirty(false);
+    }
   });
 
   ipc.on('import', function(e, args) {
