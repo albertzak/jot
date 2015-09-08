@@ -5415,17 +5415,22 @@ this.gridManager = function() {
           $($.parseXML('<defs></defs>').documentElement).prependTo($(svgcontent));
         }
 
-        var p = $('#svgroot>defs>#gridpattern').remove();
-        $('#svgcontent>defs').append(p);
+        var p1 = $('#svgroot>defs>#gridpattern').remove();
+        var p2 = $('#svgroot>defs>#gridpagebreak').remove();
+        $('#svgcontent>defs').append(p1);
+        $('#svgcontent>defs').append(p2);
       }
     },
 
     moveFromContentToRoot: function() {
       if (curConfig.exportGrid) {
-        var p = $('#svgcontent>defs>#gridpattern').remove();
+        var p1 = $('#svgcontent>defs>#gridpattern').remove();
+        var p2 = $('#svgcontent>defs>#gridpagebreak').remove();
 
         $('#svgroot>defs>#gridpattern').remove();
-        $('#svgroot>defs').append(p);
+        $('#svgroot>defs>#gridpagebreak').remove();
+        $('#svgroot>defs').append(p1);
+        $('#svgroot>defs').append(p2);
       }
     },
   }
