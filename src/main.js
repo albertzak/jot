@@ -136,6 +136,17 @@ app.on('ready', function() {
     });
   });
 
+  mainWindow.on('close', function(e) {
+    var close = !!dialog.showMessageBox(mainWindow, {
+      type: 'warning',
+      buttons: ['No, keep', 'Yes, close'],
+      title: 'Warning',
+      message: 'Do you really want to close this file?'
+    });
+
+    if (!close)
+      e.preventDefault();
+  });
 
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
